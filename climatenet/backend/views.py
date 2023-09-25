@@ -1,10 +1,13 @@
 from rest_framework import generics
-from rest_framework import status
+from django.http import HttpResponse
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .serializers import DeviceSerializer
+from .serializers import DeviceSerializer, AboutPageSerializer, DeviceDetailSerializer, FooterSerializer, ContactSerializer
+from backend.models import Device, About, DeviceDetail, Footer, ContactUs
 from datetime import datetime, timedelta
 import psycopg2
 import pandas as pd
+from rest_framework.decorators import action
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -92,3 +95,28 @@ class DeviceDetailView(generics.ListAPIView):
 
         except Exception as e:
             return []
+
+
+class AboutPageViewSet(viewsets.ModelViewSet):
+    queryset = About.objects.all()
+    serializer_class = AboutPageSerializer
+
+class DeviceDetailViewSet(viewsets.ModelViewSet):
+    queryset = DeviceDetail.objects.all()
+    serializer_class = DeviceDetailSerializer
+
+class FooterViewSet(viewsets.ModelViewSet):
+    queryset = Footer.objects.all()
+    serializer_class = FooterSerializer
+
+class ContactUsViewSet(viewsets.ModelViewSet):
+    queryset = ContactUs.objects.all()
+    serializer_class = ContactSerializer
+
+    @action(detail=False, methods=['post'])
+    def contact_form(self, request):
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Form submitted successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
