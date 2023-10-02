@@ -1,4 +1,4 @@
-Django-app backend
+
 
 Endpoints for frontend
 
