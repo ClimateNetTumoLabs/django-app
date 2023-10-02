@@ -1,4 +1,4 @@
-from django.urls import path, include
+from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 from backend.views import DeviceDetailView, FooterViewSet, AboutPageViewSet, DeviceDetailViewSet, ContactUsViewSet
 
@@ -10,6 +10,6 @@ router.register(r'footer', FooterViewSet)
 urlpatterns = [
     path('api/', include(router.urls)),
     # Endpoint to list devices
-    path('api/device/<int:device_id>/', DeviceDetailView.as_view(), name='device-detail'),
-
+    re_path(r'^api/device/(?P<device_id>\d+)/?$', DeviceDetailView.as_view(), name='device-detail'),
 ]
+

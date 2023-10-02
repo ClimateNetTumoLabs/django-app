@@ -133,7 +133,6 @@ STATIC_URL = 'static/'
 STATIC_ROOT = 'static'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://54.165.73.3:3000",
     "http://localhost:3000"
     # Add other allowed origins here if needed
 ]
