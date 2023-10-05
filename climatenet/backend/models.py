@@ -18,13 +18,14 @@ class Device(models.Model):
         return f"Device {self.id}"
 
 class DeviceDetail(models.Model):
-    device_number = models.CharField(max_length=50)
-    address = models.CharField(max_length=200)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6)
-    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    name = models.CharField(max_length=200)
+    parent_name = models.CharField(max_length=200)
+    latitude = models.DecimalField(max_digits=18, decimal_places=15)
+    longitude = models.DecimalField(max_digits=18, decimal_places=15)
 
     def __str__(self):
-        return f"{self.device_number}"
+        return f"{self.id}"
+
 class About(models.Model):
     title = models.TextField()
     mission = models.TextField()

@@ -8,8 +8,8 @@ router.register(r'devices', DeviceDetailViewSet)
 router.register(r'footer', FooterViewSet)
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
     # Endpoint to list devices
-    re_path(r'^api/device/(?P<device_id>\d+)/?$', DeviceDetailView.as_view(), name='device-detail'),
+    re_path(r'^device/(?P<device_id>\d+)/?$', DeviceDetailView.as_view(), name='device-detail'),
 ]
 

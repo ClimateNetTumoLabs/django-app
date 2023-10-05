@@ -1,4 +1,5 @@
 from rest_framework import generics
+from rest_framework.response import Response
 from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -95,7 +96,16 @@ class DeviceDetailView(generics.ListAPIView):
 
         except Exception as e:
             return []
+    def list(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
 
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+            return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+ 
 
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
