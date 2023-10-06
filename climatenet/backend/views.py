@@ -9,16 +9,22 @@ from datetime import datetime, timedelta
 import psycopg2
 import pandas as pd
 from rest_framework.decorators import action
+import logging
+
+logger = logging.getLogger(__name__)  # Use __name__ to associate the logger with your view's module
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
 
     def get_queryset(self):
         device_id = self.kwargs.get('device_id')
-
-        # Get start_time and end_time from query parameters, if specified
-        start_time_str = self.request.query_params.get('start_time_str')
-        end_time_str = self.request.query_params.get('end_time_str')
+        query_params = self.request.query_params.keys()
+        
+        start_time_str = None
+        end_time_str = None
+    # Check if there are any query parameters other than 'start_time_str' and 'end_time_str'
+        if any(param not in {'start_time_str', 'end_time_str'} for param in query_params):
+            return []
 
         # Define the PostgreSQL connection parameters
         host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
@@ -41,15 +47,14 @@ class DeviceDetailView(generics.ListAPIView):
             # Construct the table name based on the device_id
             table_name = f'device{device_id}'
 
-            if start_time_str and end_time_str:
-                # If start_time and end_time are specified, execute a query to retrieve data within the specified time range
-                query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time DESC;"
+            if 'start_time_str' in query_params and 'end_time_str' in query_params:
+                start_time_str = self.request.query_params.get('start_time_str')
+                end_time_str = self.request.query_params.get('end_time_str')
+                query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC;"
                 cursor.execute(query, (start_time_str, end_time_str))
             else:
-                # If start_time and end_time are not specified, execute a query to retrieve the last 96 data points
-                query = f"SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96;"
+                query = f"SELECT * FROM {table_name} ORDER BY time ASC LIMIT 96;"
                 cursor.execute(query)
-
             # Fetch all rows within the time range
             rows = cursor.fetchall()
 
@@ -95,6 +100,7 @@ class DeviceDetailView(generics.ListAPIView):
                 return []
 
         except Exception as e:
+            logger.error(f"An error occurred: {e}")
             return []
     def list(self, request, *args, **kwargs):
         try:

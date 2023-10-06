@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import logging
 import os
 from pathlib import Path
 
@@ -143,3 +144,18 @@ CORS_ALLOWED_ORIGINS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ADMIN_SITE_TITLE = "ClimateNet Admin"
 ADMIN_SITE_HEADER = "ClimateNet Administration"
+
+# Configure the logger
+logger = logging.getLogger('myapp.views')
+logger.setLevel(logging.DEBUG)
+
+# Create a file handler for the log file
+log_file = 'debug.log'
+file_handler = logging.FileHandler(log_file)
+
+# Create a formatter for the log entries
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the file handler to the logger
+logger.addHandler(file_handler)
