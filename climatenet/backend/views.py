@@ -20,11 +20,15 @@ class DeviceDetailView(generics.ListAPIView):
         device_id = self.kwargs.get('device_id')
         query_params = self.request.query_params.keys()
         
+        if device_id is None or not str(device_id).isdigit():
+            return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
+
         start_time_str = None
         end_time_str = None
     # Check if there are any query parameters other than 'start_time_str' and 'end_time_str'
         if any(param not in {'start_time_str', 'end_time_str'} for param in query_params):
-            return []
+            return Response({'error': 'Invalid query parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
 
         # Define the PostgreSQL connection parameters
         host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
@@ -45,7 +49,7 @@ class DeviceDetailView(generics.ListAPIView):
             cursor = connection.cursor()
 
             # Construct the table name based on the device_id
-            table_name = f'device{device_id}'
+            table_name = f'device{str(device_id)}'
 
             if 'start_time_str' in query_params and 'end_time_str' in query_params:
                 start_time_str = self.request.query_params.get('start_time_str')
@@ -53,7 +57,7 @@ class DeviceDetailView(generics.ListAPIView):
                 query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC;"
                 cursor.execute(query, (start_time_str, end_time_str))
             else:
-                query = f"SELECT * FROM {table_name} ORDER BY time ASC LIMIT 96;"
+                query = f"SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96  ;"
                 cursor.execute(query)
             # Fetch all rows within the time range
             rows = cursor.fetchall()
@@ -109,7 +113,7 @@ class DeviceDetailView(generics.ListAPIView):
 
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
-            print(f"An error occurred: {str(e)}")
+            print(f"An error occurred: {e}")
             return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
 
