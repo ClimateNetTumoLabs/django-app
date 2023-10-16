@@ -26,6 +26,23 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
+def establish_postgresql_connection():
+    host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
+    database = "raspi_data"
+    user = "postgres"
+    password = "climatenet2024"
+
+    try:
+        connection = psycopg2.connect(
+            host=host,
+            database=database,
+            user=user,
+            password=password
+        )
+        return connection
+    except Exception as e:
+        logger.error(f"Failed to establish a PostgreSQL connection: {e}")
+        return None
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -43,23 +60,11 @@ class DeviceDetailView(generics.ListAPIView):
             return Response({'error': 'Invalid query parameters'}, 
                     status=status.HTTP_400_BAD_REQUEST)
 
-
-        # Define the PostgreSQL connection parameters
-        host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
-        database = "raspi_data"
-        user = "postgres"
-        password = "climatenet2024"
+        connection = establish_postgresql_connection()
+        if connection is None:
+            return []
 
         try:
-            # Create a connection to the PostgreSQL database
-            connection = psycopg2.connect(
-                host=host,
-                database=database,
-                user=user,
-                password=password
-            )
-
-            # Create a cursor object to execute SQL queries
             cursor = connection.cursor()
 
             # Construct the table name based on the device_id
@@ -104,15 +109,22 @@ class DeviceDetailView(generics.ListAPIView):
                     for i in range(num_groups):
                         group = df.iloc[i * 4: (i + 1) * 4]
 
-                        # Calculate the mean for numeric columns with error handling
+                        # Calculate the mean for  columns with error handling
                         group_mean = {}
                         for column in group.columns:
-                            if pd.api.types.is_numeric_dtype(group[column].dtype):
+                            if column == 'time':
+                                # Calculate the mean of datetime values
+                                time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
+                                # Format the mean time as a string with milliseconds
+                                mean_time_formatted = time_mean.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                                group_mean['time'] = mean_time_formatted
+                            elif pd.api.types.is_numeric_dtype(group[column].dtype):
                                 group_mean[column] = group[column].mean()
                             else:
                                 group_mean[column] = None
 
                         group_means.append(group_mean)
+
 
                     return group_means
             else:
@@ -121,12 +133,12 @@ class DeviceDetailView(generics.ListAPIView):
         except Exception as e:
             logger.error(f"An error occurred: {e}")
             return []
+
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
             serializer = self.get_serializer(queryset, many=True)
 
-            # Log the data using the logger
             logger.info("Data from the database: %s", serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
