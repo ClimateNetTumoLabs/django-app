@@ -17,7 +17,7 @@ connection = psycopg2.connect(
 cursor = connection.cursor()
 
 table_name = "device2"
-query = f"SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96;"
+query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
 
 cursor.execute(query)
 rows = cursor.fetchall()

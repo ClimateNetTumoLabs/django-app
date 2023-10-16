@@ -13,7 +13,7 @@ import logging
 
 # Configure the logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # Set the logger level to DEBUG
+logger.setLevel(logging.DEBUG)
 
 # Create a file handler and set the file path
 log_file = "debugger.log"
@@ -26,23 +26,7 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
-def establish_postgresql_connection():
-    host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
-    database = "raspi_data"
-    user = "postgres"
-    password = "climatenet2024"
 
-    try:
-        connection = psycopg2.connect(
-            host=host,
-            database=database,
-            user=user,
-            password=password
-        )
-        return connection
-    except Exception as e:
-        logger.error(f"Failed to establish a PostgreSQL connection: {e}")
-        return None
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -50,22 +34,37 @@ class DeviceDetailView(generics.ListAPIView):
     def get_queryset(self):
         device_id = self.kwargs.get('device_id')
         query_params = self.request.query_params.keys()
-        
+
         if device_id is None or not str(device_id).isdigit():
             return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
 
         start_time_str = None
         end_time_str = None
+        print("Query Parameters:", self.request.query_params)
         if any(param not in {'start_time_str', 'end_time_str'} for param in query_params):
-            return Response({'error': 'Invalid query parameters'}, 
+            return Response({'error': 'Invalid query parameters'},
                     status=status.HTTP_400_BAD_REQUEST)
 
-        connection = establish_postgresql_connection()
-        if connection is None:
-            return []
+        def establish_postgresql_connection():
+            host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
+            database = "raspi_data"
+            user = "postgres"
+            password = "climatenet2024"
+
+            try:
+                connection = psycopg2.connect(
+                    host=host,
+                    database=database,
+                    user=user,
+                    password=password
+                )
+                return connection
+            except Exception as e:
+                logger.error(f"Failed to establish a PostgreSQL connection: {e}")
+                return None
 
         try:
-            cursor = connection.cursor()
+            cursor = establish_postgresql_connection().cursor()
 
             # Construct the table name based on the device_id
             table_name = f'device{str(device_id)}'
@@ -73,18 +72,23 @@ class DeviceDetailView(generics.ListAPIView):
             if 'start_time_str' in query_params and 'end_time_str' in query_params:
                 start_time_str = self.request.query_params.get('start_time_str')
                 end_time_str = self.request.query_params.get('end_time_str')
-                query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC;"
+                query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
+                print("SQL Query:", query)
+                print("Query Parameters:", (start_time_str, end_time_str))
+
                 cursor.execute(query, (start_time_str, end_time_str))
+                cursor.fetchall()
             else:
-                query = f"SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96;"
+                query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96)" \
+                        f" subquery ORDER BY time ASC;"
                 cursor.execute(query)
             rows = cursor.fetchall()
-            
+
             if rows:
                 device_data = []
                 for row in rows:
                     device_data.append({
-                        'time': row[1].strftime("%Y-%m-%d %H:%M:%S"),
+                        'time': row[1],
                         'light': row[2],
                         'temperature': row[3],
                         'pressure': row[4],
@@ -104,29 +108,35 @@ class DeviceDetailView(generics.ListAPIView):
                 # Convert the 'time' column to a datetime object
                 df['time'] = pd.to_datetime(df['time'])
                 if not (start_time_str and end_time_str):
-                    num_groups = len(df) // 4
-                    group_means = []
-                    for i in range(num_groups):
-                        group = df.iloc[i * 4: (i + 1) * 4]
+                    num_records = len(df)
 
-                        # Calculate the mean for  columns with error handling
-                        group_mean = {}
-                        for column in group.columns:
-                            if column == 'time':
-                                # Calculate the mean of datetime values
-                                time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                                # Format the mean time as a string with milliseconds
-                                mean_time_formatted = time_mean.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-                                group_mean['time'] = mean_time_formatted
-                            elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                                group_mean[column] = group[column].mean()
-                            else:
-                                group_mean[column] = None
+                    if num_records < 24:
+                        # If there are fewer than 24 records, return all data
+                        return device_data
+                    else:
+                        # If there are 24 or more records, calculate the mean
+                        num_groups = num_records // 4
+                        group_means = []
+                        for i in range(num_groups):
+                            group = df.iloc[i * 4: (i + 1) * 4]
 
-                        group_means.append(group_mean)
+                            # Calculate the mean for columns with error handling
+                            group_mean = {}
+                            for column in group.columns:
+                                if column == 'time':
+                                    # Calculate the mean of datetime values
+                                    time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
+                                    # Format the mean time as a string with milliseconds
+                                    mean_time_formatted = time_mean.strftime("%Y-%m-%d%H:%M:%S.%f")[:-3]
+                                    group_mean['time'] = mean_time_formatted
+                                elif pd.api.types.is_numeric_dtype(group[column].dtype):
+                                    group_mean[column] = group[column].mean()
+                                else:
+                                    group_mean[column] = None
 
+                            group_means.append(group_mean)
 
-                    return group_means
+                        return group_means
             else:
                 return []
 
@@ -145,7 +155,6 @@ class DeviceDetailView(generics.ListAPIView):
             # Log the error using the logger
             logger.error(f"An error occurred: {e}")
             return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
