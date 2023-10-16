@@ -149,7 +149,7 @@ ADMIN_SITE_TITLE = "ClimateNet Admin"
 ADMIN_SITE_HEADER = "ClimateNet Administration"
 
 # Configure the logger
-logger = logging.getLogger('myapp.views')
+logger = logging.getLogger('backend.views')
 logger.setLevel(logging.DEBUG)
 
 # Create a file handler for the log file
@@ -162,3 +162,29 @@ file_handler.setFormatter(formatter)
 
 # Add the file handler to the logger
 logger.addHandler(file_handler)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Set this to the desired logging level (DEBUG, INFO, WARNING, ERROR, etc.)
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'backend': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Set this to the desired logging level for your app
+            'propagate': False,
+        },
+    },
+}
+
