@@ -1,15 +1,14 @@
 from rest_framework import generics
-from rest_framework.response import Response
-from django.http import HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .serializers import DeviceSerializer, AboutPageSerializer, DeviceDetailSerializer, FooterSerializer, ContactSerializer
-from backend.models import Device, About, DeviceDetail, Footer, ContactUs
-from datetime import datetime, timedelta
+from .serializers import DeviceSerializer, AboutPageSerializer, DeviceDetailSerializer, \
+    FooterSerializer, ContactSerializer
+from .models import Device, About, DeviceDetail, Footer, ContactUs
 import psycopg2
 import pandas as pd
 from rest_framework.decorators import action
 import logging
+from django.http import JsonResponse
 
 # Configure the logger
 logger = logging.getLogger(__name__)
@@ -27,6 +26,20 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
+def fetch_data_with_time_range(cursor, table_name, start_time_str, end_time_str):
+    query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
+    cursor.execute(query, (start_time_str, end_time_str))
+    rows = cursor.fetchall()
+    return rows
+
+
+def fetch_last_records(cursor, table_name):
+    query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
+            f"BY time DESC LIMIT 96) subquery ORDER BY time ASC;"
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    return rows
+
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -42,8 +55,7 @@ class DeviceDetailView(generics.ListAPIView):
         end_time_str = None
         print("Query Parameters:", self.request.query_params)
         if any(param not in {'start_time_str', 'end_time_str'} for param in query_params):
-            return Response({'error': 'Invalid query parameters'},
-                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid query parameters'}, status=status.HTTP_400_BAD_REQUEST)
 
         def establish_postgresql_connection():
             host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
@@ -65,24 +77,14 @@ class DeviceDetailView(generics.ListAPIView):
 
         try:
             cursor = establish_postgresql_connection().cursor()
-
-            # Construct the table name based on the device_id
             table_name = f'device{str(device_id)}'
 
             if 'start_time_str' in query_params and 'end_time_str' in query_params:
                 start_time_str = self.request.query_params.get('start_time_str')
                 end_time_str = self.request.query_params.get('end_time_str')
-                query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
-                print("SQL Query:", query)
-                print("Query Parameters:", (start_time_str, end_time_str))
-
-                cursor.execute(query, (start_time_str, end_time_str))
-                cursor.fetchall()
+                rows = fetch_data_with_time_range(cursor, table_name, start_time_str, end_time_str)
             else:
-                query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER BY time DESC LIMIT 96)" \
-                        f" subquery ORDER BY time ASC;"
-                cursor.execute(query)
-            rows = cursor.fetchall()
+                rows = fetch_last_records(cursor, table_name)
 
             if rows:
                 device_data = []
@@ -154,8 +156,10 @@ class DeviceDetailView(generics.ListAPIView):
         except Exception as e:
             # Log the error using the logger
             logger.error(f"An error occurred: {e}")
-            return Response({'error': 'An error occurred while fetching the data.'}, 
-                   status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'An error occurred while fetching the data.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
@@ -171,9 +175,20 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
             return DeviceDetail.objects.filter(parent_name=parent_name)
         return super().get_queryset()
 
+    @action(detail=False, methods=['get'])
+    def get_by_generated_id(self, request, generated_id):
+        try:
+            device = DeviceDetail.objects.get(generated_id=generated_id)
+            serializer = self.get_serializer(device)
+            return Response(serializer.data)
+        except DeviceDetail.DoesNotExist:
+            return JsonResponse({'error': 'Device not found'}, status=404)
+
+
 class FooterViewSet(viewsets.ModelViewSet):
     queryset = Footer.objects.all()
     serializer_class = FooterSerializer
+
 
 class ContactUsViewSet(viewsets.ModelViewSet):
     queryset = ContactUs.objects.all()
@@ -186,3 +201,4 @@ class ContactUsViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response({'message': 'Form submitted successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
