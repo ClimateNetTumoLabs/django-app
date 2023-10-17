@@ -154,14 +154,22 @@ class DeviceDetailView(generics.ListAPIView):
         except Exception as e:
             # Log the error using the logger
             logger.error(f"An error occurred: {e}")
-            return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'An error occurred while fetching the data.'}, 
+                   status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
 
+
 class DeviceDetailViewSet(viewsets.ModelViewSet):
     queryset = DeviceDetail.objects.all()
     serializer_class = DeviceDetailSerializer
+    
+    def get_queryset(self):
+        parent_name = self.kwargs.get('parent_name')
+        if parent_name:
+            return DeviceDetail.objects.filter(parent_name=parent_name)
+        return super().get_queryset()
 
 class FooterViewSet(viewsets.ModelViewSet):
     queryset = Footer.objects.all()
