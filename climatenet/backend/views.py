@@ -8,7 +8,7 @@ import psycopg2
 import pandas as pd
 from rest_framework.decorators import action
 import logging
-from django.http import JsonResponse
+
 
 # Configure the logger
 logger = logging.getLogger(__name__)
@@ -175,15 +175,17 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
             return DeviceDetail.objects.filter(parent_name=parent_name)
         return super().get_queryset()
 
-    @action(detail=False, methods=['get'])
-    def get_by_generated_id(self, request, generated_id):
+    lookup_field = 'generated_id'  # Specify the lookup field as 'generated_id'
+    lookup_url_kwarg = 'generated_id'  # Match the URL parameter name
+
+    def retrieve(self, request, generated_id):
+        print("Received generated_id:", generated_id)
         try:
             device = DeviceDetail.objects.get(generated_id=generated_id)
-            serializer = self.get_serializer(device)
+            serializer = DeviceDetailSerializer(device)
             return Response(serializer.data)
         except DeviceDetail.DoesNotExist:
-            return JsonResponse({'error': 'Device not found'}, status=404)
-
+            return Response({"detail": "Device not found"}, status=404)
 
 class FooterViewSet(viewsets.ModelViewSet):
     queryset = Footer.objects.all()
