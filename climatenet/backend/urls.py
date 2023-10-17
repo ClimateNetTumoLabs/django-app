@@ -12,8 +12,9 @@ urlpatterns = [
     path('', include(router.urls)),
     re_path(r'^devices/(?P<parent_name>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'list'}),
             name='device-detail-list'),
-    path('devices/<str:generated_id>/', DeviceDetailViewSet.as_view({'get': 'get_by_generated_id'}),
-         name='device-detail-generated-id'),
+    re_path(r'^devices/(?P<generated_id>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'retrieve'}),
+            name='device-detail-generated-id'),
+
     re_path(r'^device/(?P<device_id>[\w-]+/?$)', DeviceDetailView.as_view(), name='device-detail'),
 ]
 
