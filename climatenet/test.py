@@ -6,6 +6,10 @@ database = "raspi_data"
 user = "postgres"
 password = "climatenet2024"
 
+# Define your start and end date variables
+start_date = '2023-09-22'
+end_date = '2023-09-23'
+
 # Create a connection to the PostgreSQL database
 connection = psycopg2.connect(
     host=host,
@@ -17,9 +21,10 @@ connection = psycopg2.connect(
 cursor = connection.cursor()
 
 table_name = "device2"
-query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
 
-cursor.execute(query)
+# Use the start_date and end_date variables in the query
+query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
+cursor.execute(query, (start_date, end_date))
 rows = cursor.fetchall()
 
 if rows:
@@ -39,33 +44,17 @@ if rows:
             'rain': row[11],
             'direction': row[12],
         })
-# Convert the data into a pandas DataFrame
-df = pd.DataFrame(device_data)
 
-# Convert the 'time' column to a datetime object
-df['time'] = pd.to_datetime(df['time'])
+    # Convert the data into a pandas DataFrame
+    df = pd.DataFrame(device_data)
 
-num_groups = len(df) // 4
-group_means = []
-for i in range(num_groups):
-    group = df.iloc[i * 4: (i + 1) * 4]
+    # Convert the 'time' column to a datetime object
+    df['time'] = pd.to_datetime(df['time'])
 
-    # Calculate the mean for numeric columns with error handling
-    group_mean = {}
-    for column in group.columns:
-        if pd.api.types.is_numeric_dtype(group[column].dtype):
-            group_mean[column] = group[column].mean()
-        else:
-            group_mean[column] = None
-        for column in group.columns:
-            if pd.api.types.is_numeric_dtype(group[column].dtype):
-                group_mean[column] = group[column].mean()
-            else:
-                group_mean[column] = None
+    print(df)
+else:
+    print("No data found for the specified date range.")
 
-        group_means.append(group_mean)
-        print(group_means)
+cursor.close()
+connection.close()
 
-
-
-print(df)

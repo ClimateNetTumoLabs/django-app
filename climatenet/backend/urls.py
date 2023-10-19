@@ -1,6 +1,6 @@
 from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
-from .views import DeviceDetailView, FooterViewSet, AboutPageViewSet, DeviceDetailViewSet, ContactUsViewSet
+from .views import  DeviceDetailView, FooterViewSet, AboutPageViewSet, DeviceDetailViewSet, ContactUsViewSet
 
 router = DefaultRouter()
 router.register(r'about', AboutPageViewSet)
@@ -14,7 +14,6 @@ urlpatterns = [
             name='device-detail-list'),
     re_path(r'^devices/(?P<generated_id>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'retrieve'}),
             name='device-detail-generated-id'),
-
     re_path(r'^device/(?P<device_id>[\w-]+/?$)', DeviceDetailView.as_view(), name='device-detail'),
 ]
 
