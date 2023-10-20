@@ -8,7 +8,7 @@ import psycopg2
 import pandas as pd
 from rest_framework.decorators import action
 import logging
-
+from datetime import datetime, timedelta
 
 # Configure the logger
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ logger.addHandler(file_handler)
 
 def fetch_data_with_time_range(cursor, table_name, start_time_str, end_time_str):
     query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
-    cursor.execute(query, (start_time_str, end_time_str))
+    cursor.execute(query, [start_time_str, end_time_str])
     rows = cursor.fetchall()
     return rows
 
@@ -50,8 +50,6 @@ class DeviceDetailView(generics.ListAPIView):
         if device_id is None or not str(device_id).isdigit():
             return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
 
-        start_time_str = self.request.GET.get('start_time')
-        end_time_str = self.request.GET.get('end_time')
 
         def establish_postgresql_connection():
             host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
@@ -74,35 +72,74 @@ class DeviceDetailView(generics.ListAPIView):
         try:
             cursor = establish_postgresql_connection().cursor()
             table_name = f'device{str(device_id)}'
+            start_date_str = self.request.GET.get('start_time_str')
+            end_date_str = self.request.GET.get('end_time_str')
+            if start_date_str and end_date_str:
+                try:
+                    # Parse the date strings into datetime objects
+                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
 
-            if start_time_str and end_time_str:
-                start_time_str = self.request.GET.get('start_time_str')
-                end_time_str = self.request.GET.get('end_time_str')
-                rows = fetch_data_with_time_range(cursor, table_name, start_time_str, end_time_str)
-                if rows:
-                    device_data = []
-                    for row in rows:
-                        device_data.append({
-                            'time': row[1],
-                            'light': row[2],
-                            'temperature': row[3],
-                            'pressure': row[4],
-                            'humidity': row[5],
-                            'pm1': row[6],
-                            'pm2_5': row[7],
-                            'pm10': row[8],
-                            'co2': row[9],
-                            'speed': row[10],
-                            'rain': row[11],
-                            'direction': row[12],
-                        })
+                    # Filter data based on date range
+                    rows = fetch_data_with_time_range(cursor, table_name, start_date, end_date)
+                    if rows:
+                        device_data = []
+                        for row in rows:
+                            device_data.append({
+                                'time': row[1],
+                                'light': row[2],
+                                'temperature': row[3],
+                                'pressure': row[4],
+                                'humidity': row[5],
+                                'pm1': row[6],
+                                'pm2_5': row[7],
+                                'pm10': row[8],
+                                'co2': row[9],
+                                'speed': row[10],
+                                'rain': row[11],
+                                'direction': row[12],
+                            })
 
-                # Convert the data into a pandas DataFrame
-                df = pd.DataFrame(device_data)
+                        # Convert the data into a pandas DataFrame
+                        df = pd.DataFrame(device_data)
 
-                # Convert the 'time' column to a datetime object
-                df['time'] = pd.to_datetime(df['time'])
-               
+                        # Convert the 'time' column to a datetime object
+                        df['time'] = pd.to_datetime(df['time'])
+
+                        num_records = len(df)
+
+                        if num_records < 24:
+                            # If there are fewer than 24 records, return all data
+                            return device_data
+                        else:
+                            # If there are 24 or more records, calculate the mean
+                            num_groups = num_records // 4
+                            group_means = []
+                            for i in range(num_groups):
+                                group = df.iloc[i * 4: (i + 1) * 4]
+
+                                # Calculate the mean for columns with error handling
+                                group_mean = {}
+                                for column in group.columns:
+                                    if column == 'time':
+                                        # Calculate the mean of datetime values
+                                        time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
+                                        # Format the mean time as a string with milliseconds
+                                        mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+                                        group_mean['time'] = mean_time_formatted
+                                    elif pd.api.types.is_numeric_dtype(group[column].dtype):
+                                        group_mean[column] = group[column].mean()
+                                    else:
+                                        group_mean[column] = None
+
+                                group_means.append(group_mean)
+
+                            return group_means
+                    else:
+                        return []
+                except Exception as e:
+                    logger.error(f"An error occurred: {e}")
+                return []   
             else:
                 rows = fetch_last_records(cursor, table_name)
 
@@ -120,7 +157,7 @@ class DeviceDetailView(generics.ListAPIView):
                             'pm10': row[8],
                             'co2': row[9],
                             'speed': row[10],
-                            'rain': row[11],
+                            'ain': row[11],
                             'direction': row[12],
                         })
 
