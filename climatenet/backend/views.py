@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .serializers import DeviceSerializer, AboutPageSerializer, DeviceDetailSerializer, \
-    FooterSerializer, ContactSerializer
+from .serializers import DeviceSerializer, AboutPageSerializer, 
+DeviceDetailSerializer, FooterSerializer, ContactSerializer
 from .models import Device, About, DeviceDetail, Footer, ContactUs
 import psycopg2
 import pandas as pd
