@@ -50,6 +50,8 @@ class DeviceDetailView(generics.ListAPIView):
         if device_id is None or not str(device_id).isdigit():
             return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
 
+        start_time_str = self.request.GET.get('start_time_str')
+        end_time_str = self.request.GET.get('end_time_str')
 
         def establish_postgresql_connection():
             host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
@@ -72,133 +74,74 @@ class DeviceDetailView(generics.ListAPIView):
         try:
             cursor = establish_postgresql_connection().cursor()
             table_name = f'device{str(device_id)}'
-            start_date_str = self.request.GET.get('start_time_str')
-            end_date_str = self.request.GET.get('end_time_str')
-            if start_date_str and end_date_str:
+
+            if start_time_str and end_time_str:
                 try:
                     # Parse the date strings into datetime objects
-                    start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)
+                    start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
+                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
 
-                    # Filter data based on date range
+                    # Fetch data within the specified time range
                     rows = fetch_data_with_time_range(cursor, table_name, start_date, end_date)
-                    if rows:
-                        device_data = []
-                        for row in rows:
-                            device_data.append({
-                                'time': row[1],
-                                'light': row[2],
-                                'temperature': row[3],
-                                'pressure': row[4],
-                                'humidity': row[5],
-                                'pm1': row[6],
-                                'pm2_5': row[7],
-                                'pm10': row[8],
-                                'co2': row[9],
-                                'speed': row[10],
-                                'rain': row[11],
-                                'direction': row[12],
-                            })
-
-                        # Convert the data into a pandas DataFrame
-                        df = pd.DataFrame(device_data)
-
-                        # Convert the 'time' column to a datetime object
-                        df['time'] = pd.to_datetime(df['time'])
-
-                        num_records = len(df)
-
-                        if num_records < 24:
-                            # If there are fewer than 24 records, return all data
-                            return device_data
-                        else:
-                            # If there are 24 or more records, calculate the mean
-                            num_groups = num_records // 4
-                            group_means = []
-                            for i in range(num_groups):
-                                group = df.iloc[i * 4: (i + 1) * 4]
-
-                                # Calculate the mean for columns with error handling
-                                group_mean = {}
-                                for column in group.columns:
-                                    if column == 'time':
-                                        # Calculate the mean of datetime values
-                                        time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                                        # Format the mean time as a string with milliseconds
-                                        mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                                        group_mean['time'] = mean_time_formatted
-                                    elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                                        group_mean[column] = group[column].mean()
-                                    else:
-                                        group_mean[column] = None
-
-                                group_means.append(group_mean)
-
-                            return group_means
-                    else:
-                        return []
                 except Exception as e:
                     logger.error(f"An error occurred: {e}")
-                return []   
-            else:
+
+            if not start_time_str or not end_time_str or not rows:
+                # Fetch the last 96 records when no time range is specified or if there's an error
                 rows = fetch_last_records(cursor, table_name)
 
-                if rows:
-                    device_data = []
-                    for row in rows:
-                        device_data.append({
-                            'time': row[1],
-                            'light': row[2],
-                            'temperature': row[3],
-                            'pressure': row[4],
-                            'humidity': row[5],
-                            'pm1': row[6],
-                            'pm2_5': row[7],
-                            'pm10': row[8],
-                            'co2': row[9],
-                            'speed': row[10],
-                            'ain': row[11],
-                            'direction': row[12],
-                        })
+            device_data = []
+            for row in rows:
+                device_data.append({
+                    'time': row[1],
+                    'light': row[2],
+                    'temperature': row[3],
+                    'pressure': row[4],
+                    'humidity': row[5],
+                    'pm1': row[6],
+                    'pm2_5': row[7],
+                    'pm10': row[8],
+                    'co2': row[9],
+                    'speed': row[10],
+                    'rain': row[11],
+                    'direction': row[12],
+                })
 
-                    # Convert the data into a pandas DataFrame
-                    df = pd.DataFrame(device_data)
+            # Convert the data into a pandas DataFrame
+            df = pd.DataFrame(device_data)
 
-                    # Convert the 'time' column to a datetime object
-                    df['time'] = pd.to_datetime(df['time'])
-                    if not (start_time_str and end_time_str):
-                        num_records = len(df)
+            # Convert the 'time' column to a datetime object
+            df['time'] = pd.to_datetime(df['time'])
 
-                        if num_records < 24:
-                            # If there are fewer than 24 records, return all data
-                            return device_data
+            num_records = len(df)
+
+            if num_records < 24:
+                # If there are fewer than 24 records, return all data
+                return device_data
+            else:
+                # If there are 24 or more records, calculate the mean
+                num_groups = num_records // 4
+                group_means = []
+                for i in range(num_groups):
+                    group = df.iloc[i * 4: (i + 1) * 4]
+
+                    # Calculate the mean for columns with error handling
+                    group_mean = {}
+                    for column in group.columns:
+                        if column == 'time':
+                            # Calculate the mean of datetime values
+                            time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
+                            # Format the mean time as a string with milliseconds
+                            mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+                            group_mean['time'] = mean_time_formatted
+                        elif pd.api.types.is_numeric_dtype(group[column].dtype):
+                            group_mean[column] = group[column].mean()
                         else:
-                            # If there are 24 or more records, calculate the mean
-                            num_groups = num_records // 4
-                            group_means = []
-                            for i in range(num_groups):
-                                group = df.iloc[i * 4: (i + 1) * 4]
+                            group_mean[column] = None
 
-                                # Calculate the mean for columns with error handling
-                                group_mean = {}
-                                for column in group.columns:
-                                    if column == 'time':
-                                        # Calculate the mean of datetime values
-                                        time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                                        # Format the mean time as a string with milliseconds
-                                        mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                                        group_mean['time'] = mean_time_formatted
-                                    elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                                        group_mean[column] = group[column].mean()
-                                    else:
-                                        group_mean[column] = None
+                    group_means.append(group_mean)
 
-                                group_means.append(group_mean)
-
-                            return group_means
-                else:
-                    return []
-
+                return group_means
         except Exception as e:
             logger.error(f"An error occurred: {e}")
             return []
@@ -207,16 +150,12 @@ class DeviceDetailView(generics.ListAPIView):
         try:
             queryset = self.get_queryset()
             serializer = self.get_serializer(queryset, many=True)
-
             logger.info("Data from the database: %s", serializer.data)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             # Log the error using the logger
             logger.error(f"An error occurred: {e}")
-            return Response({'error': 'An error occurred while fetching the data.'},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
+            return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
@@ -260,5 +199,3 @@ class ContactUsViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response({'message': 'Form submitted successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
