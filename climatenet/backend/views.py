@@ -86,7 +86,7 @@ class DeviceDetailView(generics.ListAPIView):
                 except Exception as e:
                     logger.error(f"An error occurred: {e}")
 
-            if not start_time_str or not end_time_str or not rows:
+            if not start_time_str or not end_time_str:
                 # Fetch the last 96 records when no time range is specified or if there's an error
                 rows = fetch_last_records(cursor, table_name)
 
@@ -155,7 +155,9 @@ class DeviceDetailView(generics.ListAPIView):
         except Exception as e:
             # Log the error using the logger
             logger.error(f"An error occurred: {e}")
-            return Response({'error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'An error occurred while fetching the data.'}, 
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
