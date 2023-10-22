@@ -1,22 +1,27 @@
-from rest_framework import generics
-from rest_framework import viewsets, status
+from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
-from .serializers import DeviceSerializer, AboutPageSerializer, 
-DeviceDetailSerializer, FooterSerializer, ContactSerializer
+from .serializers import (
+    DeviceSerializer, AboutPageSerializer,
+    DeviceDetailSerializer, FooterSerializer, ContactSerializer
+)
 from .models import Device, About, DeviceDetail, Footer, ContactUs
-import psycopg2
 import pandas as pd
 from rest_framework.decorators import action
 import logging
 from datetime import datetime, timedelta
+from .db_connection import establish_postgresql_connection
+import re
+
+# Define a constant for the date format pattern
+DATE_FORMAT_PATTERN = r'^\d{4}-\d{2}-\d{2}'
 
 # Configure the logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Create a file handler and set the file path
-log_file = "debugger.log"
-file_handler = logging.FileHandler(log_file)
+LOG_FILE = "debugger.log"
+file_handler = logging.FileHandler(LOG_FILE)
 
 # Create a formatter to specify the log message format
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -25,21 +30,69 @@ file_handler.setFormatter(formatter)
 # Add the file handler to the logger
 logger.addHandler(file_handler)
 
-
-def fetch_data_with_time_range(cursor, table_name, start_time_str, end_time_str):
-    query = f"SELECT * FROM {table_name} WHERE time >= %s AND time <= %s ORDER BY time ASC"
-    cursor.execute(query, [start_time_str, end_time_str])
+def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
+    """Fetch data from the database within a time range."""
+    query = f"SELECT * FROM {table_name} WHERE time >= %s " \
+            f"AND time <= %s ORDER BY time ASC"
+    cursor.execute(query, [start_date, end_date])
     rows = cursor.fetchall()
     return rows
 
-
 def fetch_last_records(cursor, table_name):
+    """Fetch the last records from the database."""
     query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
             f"BY time DESC LIMIT 96) subquery ORDER BY time ASC;"
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows
 
+def preprocess_device_data(rows):
+    """Process raw device data and return it in a structured format."""
+    device_data = []
+    for row in rows:
+        device_data.append({
+            'time': row[1],
+            'light': row[2],
+            'temperature': row[3],
+            'pressure': row[4],
+            'humidity': row[5],
+            'pm1': row[6],
+            'pm2_5': row[7],
+            'pm10': row[8],
+            'co2': row[9],
+            'speed': row[10],
+            'rain': row[11],
+            'direction': row[12],
+        })
+    return device_data
+
+def compute_group_means(df, mean_interval):
+    """Compute means for groups of data within the given interval."""
+    num_records = len(df)
+    num_groups = num_records // mean_interval
+    group_means = []
+
+    for i in range(num_groups):
+        group_start = i * mean_interval
+        group_end = (i + 1) * mean_interval
+        group = df.iloc[group_start:group_end]
+
+        group_mean = {}
+
+        for column in group.columns:
+            if column == 'time':
+                time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
+                mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+                group_mean['time'] = mean_time_formatted
+            elif pd.api.types.is_numeric_dtype(group[column].dtype):
+                mean_value = round(group[column].mean(), 2)
+                group_mean[column] = mean_value
+            else:
+                group_mean[column] = None
+
+        group_means.append(group_mean)
+
+    return group_means
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -48,133 +101,104 @@ class DeviceDetailView(generics.ListAPIView):
         device_id = self.kwargs.get('device_id')
 
         if device_id is None or not str(device_id).isdigit():
-            return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid device_id'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
 
-        def establish_postgresql_connection():
-            host = "climatenet.c8nb4zcoufs1.us-east-1.rds.amazonaws.com"
-            database = "raspi_data"
-            user = "postgres"
-            password = "climatenet2024"
-
-            try:
-                connection = psycopg2.connect(
-                    host=host,
-                    database=database,
-                    user=user,
-                    password=password
-                )
-                return connection
-            except Exception as e:
-                logger.error(f"Failed to establish a PostgreSQL connection: {e}")
-                return None
-
         try:
             cursor = establish_postgresql_connection().cursor()
+            if not cursor:
+                return Response({'error': 'Failed to establish a PostgreSQL connection'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
             table_name = f'device{str(device_id)}'
 
-            if start_time_str and end_time_str:
+            if (start_time_str and end_time_str) and \
+               (re.match(DATE_FORMAT_PATTERN, start_time_str) and \
+               re.match(DATE_FORMAT_PATTERN, end_time_str)):
+
                 try:
-                    # Parse the date strings into datetime objects
                     start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
                     end_date = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
 
-                    # Fetch data within the specified time range
+                    if start_date >= end_date:
+                        return Response({'error': 'start_time_str should be '
+                                                  'earlier than end_time_str'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+
                     rows = fetch_data_with_time_range(cursor, table_name, start_date, end_date)
-                except Exception as e:
-                    logger.error(f"An error occurred: {e}")
+                    device_data = preprocess_device_data(rows)
 
-            if not start_time_str or not end_time_str:
-                # Fetch the last 96 records when no time range is specified or if there's an error
+                    df = pd.DataFrame(device_data)
+                    df['time'] = pd.to_datetime(df['time'])
+
+                    num_records = len(df)
+
+                    if num_records < 24:
+                        return device_data
+                    else:
+                        interval = (end_date - start_date).days
+                        mean_interval = 4 if interval == 1 else 4 * interval
+
+                        group_means = compute_group_means(df, mean_interval)
+
+                        return Response(group_means, status=status.HTTP_200_OK)
+
+                except ValueError:
+                    return Response({'error': 'Invalid date format in '
+                                              'start_time_str or end_time_str'},
+                                    status=status.HTTP_400_BAD_REQUEST)
+
+            elif not start_time_str and not end_time_str:
                 rows = fetch_last_records(cursor, table_name)
+                device_data = preprocess_device_data(rows)
 
-            device_data = []
-            for row in rows:
-                device_data.append({
-                    'time': row[1],
-                    'light': row[2],
-                    'temperature': row[3],
-                    'pressure': row[4],
-                    'humidity': row[5],
-                    'pm1': row[6],
-                    'pm2_5': row[7],
-                    'pm10': row[8],
-                    'co2': row[9],
-                    'speed': row[10],
-                    'rain': row[11],
-                    'direction': row[12],
-                })
+                df = pd.DataFrame(device_data)
+                df['time'] = pd.to_datetime(df['time'])
 
-            # Convert the data into a pandas DataFrame
-            df = pd.DataFrame(device_data)
+                num_records = len(df)
 
-            # Convert the 'time' column to a datetime object
-            df['time'] = pd.to_datetime(df['time'])
+                if num_records < 24:
+                    return device_data
+                else:
+                    group_means = compute_group_means(df, 4)
 
-            num_records = len(df)
-
-            if num_records < 24:
-                # If there are fewer than 24 records, return all data
-                return device_data
+                    return Response(group_means, status=status.HTTP_200_OK)
             else:
-                # If there are 24 or more records, calculate the mean
-                num_groups = num_records // 4
-                group_means = []
-                for i in range(num_groups):
-                    group = df.iloc[i * 4: (i + 1) * 4]
-
-                    # Calculate the mean for columns with error handling
-                    group_mean = {}
-                    for column in group.columns:
-                        if column == 'time':
-                            # Calculate the mean of datetime values
-                            time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                            # Format the mean time as a string with milliseconds
-                            mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                            group_mean['time'] = mean_time_formatted
-                        elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                            group_mean[column] = group[column].mean()
-                        else:
-                            group_mean[column] = None
-
-                    group_means.append(group_mean)
-
-                return group_means
+                return Response([], status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(f"An error occurred: {e}")
-            return []
+            return Response({'error': 'An error occurred while fetching the data.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
-            serializer = self.get_serializer(queryset, many=True)
-            logger.info("Data from the database: %s", serializer.data)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return queryset
         except Exception as e:
-            # Log the error using the logger
             logger.error(f"An error occurred: {e}")
-            return Response({'error': 'An error occurred while fetching the data.'}, 
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'An error occurred while fetching the data.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
 
-
 class DeviceDetailViewSet(viewsets.ModelViewSet):
     queryset = DeviceDetail.objects.all()
     serializer_class = DeviceDetailSerializer
-    
+
     def get_queryset(self):
         parent_name = self.kwargs.get('parent_name')
         if parent_name:
             return DeviceDetail.objects.filter(parent_name=parent_name)
         return super().get_queryset()
 
-    lookup_field = 'generated_id'  # Specify the lookup field as 'generated_id'
-    lookup_url_kwarg = 'generated_id'  # Match the URL parameter name
+    lookup_field = 'generated_id'
+    lookup_url_kwarg = 'generated_id'
 
     def retrieve(self, request, generated_id):
         print("Received generated_id:", generated_id)
@@ -189,7 +213,6 @@ class FooterViewSet(viewsets.ModelViewSet):
     queryset = Footer.objects.all()
     serializer_class = FooterSerializer
 
-
 class ContactUsViewSet(viewsets.ModelViewSet):
     queryset = ContactUs.objects.all()
     serializer_class = ContactSerializer
@@ -199,5 +222,6 @@ class ContactUsViewSet(viewsets.ModelViewSet):
         serializer = ContactSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Form submitted successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'Form submitted successfully'},
+                            status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
