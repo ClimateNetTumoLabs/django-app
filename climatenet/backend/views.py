@@ -7,28 +7,10 @@ from .serializers import (
 from .models import Device, About, DeviceDetail, Footer, ContactUs
 import pandas as pd
 from rest_framework.decorators import action
-import logging
 from datetime import datetime, timedelta
 from .db_connection import establish_postgresql_connection
-import re
+from .logger import logger
 
-# Define a constant for the date format pattern
-DATE_FORMAT_PATTERN = r'^\d{4}-\d{2}-\d{2}'
-
-# Configure the logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Create a file handler and set the file path
-LOG_FILE = "debugger.log"
-file_handler = logging.FileHandler(LOG_FILE)
-
-# Create a formatter to specify the log message format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-# Add the file handler to the logger
-logger.addHandler(file_handler)
 
 def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
     """Fetch data from the database within a time range."""
@@ -110,14 +92,13 @@ class DeviceDetailView(generics.ListAPIView):
         try:
             cursor = establish_postgresql_connection().cursor()
             if not cursor:
-                return Response({'error': 'Failed to establish a PostgreSQL connection'},
+                return Response({'error': 'Failed to establish a connection'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             table_name = f'device{str(device_id)}'
 
-            if (start_time_str and end_time_str) and \
-               (re.match(DATE_FORMAT_PATTERN, start_time_str) and \
-               re.match(DATE_FORMAT_PATTERN, end_time_str)):
+            if 'start_time_str' in self.request.query_params \
+                and 'end_time_str' in self.request.query_params:
 
                 try:
                     start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
@@ -151,7 +132,7 @@ class DeviceDetailView(generics.ListAPIView):
                                               'start_time_str or end_time_str'},
                                     status=status.HTTP_400_BAD_REQUEST)
 
-            elif not start_time_str and not end_time_str:
+            elif not self.request.query_params:
                 rows = fetch_last_records(cursor, table_name)
                 device_data = preprocess_device_data(rows)
 
