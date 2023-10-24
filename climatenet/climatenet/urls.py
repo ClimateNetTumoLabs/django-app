@@ -15,13 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-
+from django.views.generic import RedirectView
+from django.shortcuts import HttpResponseRedirect
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html')),
+    re_path(r'^admin$', lambda x: HttpResponseRedirect('/admin/')),
     path('admin/', admin.site.urls),
     path('', include('backend.urls')),  # Include your app's URLs here
 ]
