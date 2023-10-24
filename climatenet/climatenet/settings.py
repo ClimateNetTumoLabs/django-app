@@ -47,9 +47,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
 ]
-
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -62,7 +62,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'climatenet.urls'
 
-
+CSRF_TRUSTED_ORIGINS = ['https://*.climatenet.am'] 
 APPEND_SLASH = True
 
 TEMPLATES = [
