@@ -41,10 +41,9 @@ def preprocess_device_data(rows):
             'pm1': row[6],
             'pm2_5': row[7],
             'pm10': row[8],
-            'co2': row[9],
-            'speed': row[10],
-            'rain': row[11],
-            'direction': row[12],
+            'speed': row[9],
+            'rain': row[10],
+            'direction': row[11],
         })
     return device_data
 
