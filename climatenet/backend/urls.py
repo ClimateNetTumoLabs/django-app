@@ -10,9 +10,10 @@ router.register(r'contact', ContactUsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('devices', DeviceDetailViewSet.as_view({'get': 'list'}), name='device-detail-list-no-slash'),
     re_path(r'^devices/(?P<parent_name>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'list'}),
             name='device-detail-list'),
-    re_path(r'^devices/(?P<generated_id>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'retrieve'}),
+    re_path(r'^device/(?P<generated_id>[\w-]+)/?$', DeviceDetailViewSet.as_view({'get': 'retrieve'}),
             name='device-detail-generated-id'),
     re_path(r'^device/(?P<device_id>[\w-]+/?$)', DeviceDetailView.as_view(), name='device-detail'),
 ]
