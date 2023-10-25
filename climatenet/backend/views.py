@@ -1,3 +1,4 @@
+from collections import Counter
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from .serializers import (
@@ -70,6 +71,11 @@ def compute_group_means(df, mean_interval):
                 group_mean[column] = mean_value
             else:
                 group_mean[column] = None
+        if not group.empty:
+            most_frequent_direction = Counter(group['direction']).most_common(1)[0][0]
+            group_mean['direction'] = most_frequent_direction
+        else:
+            group_mean['direction'] = None
 
         group_means.append(group_mean)
 
