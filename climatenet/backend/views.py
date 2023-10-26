@@ -1,4 +1,3 @@
-from collections import Counter
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from .serializers import (
@@ -11,7 +10,7 @@ from rest_framework.decorators import action
 from datetime import datetime, timedelta
 from .db_connection import establish_postgresql_connection
 from .logger import logger
-
+from collections import Counter
 
 def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
     """Fetch data from the database within a time range."""
@@ -107,14 +106,16 @@ class DeviceDetailView(generics.ListAPIView):
 
                 try:
                     start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
+                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d') 
+                    + timedelta(days=1)
 
                     if start_date >= end_date:
                         return Response({'error': 'start_time_str should be '
                                                   'earlier than end_time_str'},
                                         status=status.HTTP_400_BAD_REQUEST)
 
-                    rows = fetch_data_with_time_range(cursor, table_name, start_date, end_date)
+                    rows = fetch_data_with_time_range(cursor, table_name, 
+                            start_date, end_date)
                     device_data = preprocess_device_data(rows)
 
                     df = pd.DataFrame(device_data)
