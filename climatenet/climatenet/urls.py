@@ -26,6 +26,7 @@ urlpatterns = [
     re_path(r'^admin$', lambda x: HttpResponseRedirect('/admin/')),
     path('admin/', admin.site.urls),
     path('', include('backend.urls')),  # Include your app's URLs here
+    path('device_cl/<str:device_id>', TemplateView.as_view(template_name='index.html'))
 ]
 
 if settings.DEBUG:
