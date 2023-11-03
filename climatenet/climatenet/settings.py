@@ -68,7 +68,7 @@ APPEND_SLASH = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '/Users/climatenet/Downloads/mywork/frontend/build')],
+        'DIRS': [os.path.join(BASE_DIR, '/home/ubuntu/frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,7 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/Users/climatenet/Downloads/mywork/frontend/build/static')
+    os.path.join(BASE_DIR, '/home/ubuntu/frontend/build/static')
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -147,8 +147,24 @@ STATIC_ROOT = 'static'
 CORS_ORIGIN_WHITELIST = [
     "https://localhost:3000",
     "http://localhost:8000",
-    "http://127.0.0.1:8000"
+    "http://127.0.0.1:8000",
+    "http://climatenet.am",
+    "https://climatennet.am"
 ]
+
+
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost:3000",
+    "http://localhost:8000",
+    "https://127.0.0.1",
+    "http://127.0.0.1",
+    "https://127.0.0.1:8000",
+    "http://127.0.0.1:8000",
+    "http://climatenet.am"
+
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -180,7 +196,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',  # Set this to the desired logging level (DEBUG, INFO, WARNING, ERROR, etc.)
+        'level': 'INFO',  # Set this to the desired logging level (DEBUB)
     },
     'loggers': {
         'django': {
