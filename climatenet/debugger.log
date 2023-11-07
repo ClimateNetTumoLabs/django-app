@@ -1,0 +1,4 @@
+2023-10-24 12:18:12,725 - backend.logger - ERROR - An error occurred: tuple index out of range
+2023-10-24 13:29:17,310 - backend.logger - ERROR - An error occurred: tuple index out of range
+2023-10-25 11:06:13,177 - backend.logger - ERROR - An error occurred: name 'Counter' is not defined
+2023-10-25 14:12:42,258 - backend.logger - ERROR - An error occurred: 'time'
