@@ -23,13 +23,7 @@ jobs:
                  chmod 600 private_key.pem
               ssh -o StrictHostKeyChecking=no -i private_key.pem \
                  ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
-                cd /home/ubuntu/raspberry_net &&
-                git checkout main &&
-                source venv/bin/activate &&
-                git pull origin main &&
-                sudo systemctl restart ScriptRun.service
-                cd .. &&
-                cd django-app &&
+                cd /home/ubuntu/django-app &&
                 git checkout main &&
                 source venv/bin/activate &&
                 git pull origin main &&
