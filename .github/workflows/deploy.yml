@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - arsen_test
 
 name: Deploy on push
 
