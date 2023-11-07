@@ -30,6 +30,5 @@ jobs:
                 sudo systemctl restart ScriptRun.service
                 pip install -r requirements.txt &&
                 sudo systemctl daemon-reload &&
-                sudo systemctl restart nginx &&
                 sudo systemctl restart gunicorn                 
               '
