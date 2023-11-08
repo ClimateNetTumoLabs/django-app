@@ -27,7 +27,8 @@ jobs:
                 git checkout arsen_test &&
                 source venv/bin/activate &&
                 git pull origin arsen_test &&
-                sudo systemctl restart ScriptRun.service
+                sudo systemctl restart ScriptRun.service &&
+                cd climatenet/ &&
                 pip install -r requirements.txt &&
                 sudo systemctl daemon-reload &&
                 sudo systemctl restart nginx
