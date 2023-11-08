@@ -25,6 +25,7 @@ jobs:
                  ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
                 cd /home/ubuntu/django-app &&
                 git checkout arsen_test &&
+                git stash &&
                 git pull origin arsen_test &&
                 sudo systemctl restart ScriptRun.service &&
                 cd climatenet/ &&
