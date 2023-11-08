@@ -23,7 +23,7 @@ jobs:
                  chmod 600 private_key.pem
               ssh -o StrictHostKeyChecking=no -i private_key.pem \
                  ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
-                cd /home/ubuntu/django-app/climatenet &&
+                cd /home/ubuntu/django-app &&
                 git checkout arsen_test &&
                 source venv/bin/activate &&
                 git pull origin arsen_test &&
