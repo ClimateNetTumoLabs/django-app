@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import  DeviceDetailView, FooterViewSet, AboutPageViewSet, DeviceDetailViewSet, ContactUsViewSet, download_data_excel
 
 router = DefaultRouter()
-router.register(r'aboutaaa', AboutPageViewSet)
+router.register(r'about', AboutPageViewSet)
 router.register(r'devices', DeviceDetailViewSet)
 router.register(r'footer', FooterViewSet)
 router.register(r'contact', ContactUsViewSet)
