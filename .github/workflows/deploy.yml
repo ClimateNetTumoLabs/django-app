@@ -25,7 +25,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i private_key.pem \
             ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
             cd /home/ubuntu/django-app && \
-            git checkout arsen_test && git stash && git pull origin arsen_test'
+            git checkout main && git stash && git pull origin main'
 
       - name: Install Dependencies
         env:
