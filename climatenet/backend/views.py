@@ -167,10 +167,11 @@ class DeviceDetailView(generics.ListAPIView):
                         return device_data
                     else:
                         interval = (end_date - start_date).days
-                        mean_interval = 4 if interval == 1 else 4 * interval
-                        group_means = compute_mean_for_time_range(df, start_date, 
-                                end_date, mean_interval)
-
+                        if interval == 1:
+                            group_means = compute_group_means(df, 4)
+                        else:
+                            mean_interval = 4 * interval
+                            group_means = compute_mean_for_time_range(df, start_date, end_date, mean_interval)
 
                         return Response(group_means, status=status.HTTP_200_OK)
 
@@ -212,7 +213,10 @@ class DeviceDetailView(generics.ListAPIView):
 
 
 @api_view(['GET'])
-def download_data_excel(request, device_id, start_time_str, end_time_str):
+def download_data_excel(request, device_id):
+    start_time_str = request.GET.get('start_time_str')
+    end_time_str = request.GET.get('end_time_str')
+
     try:
         # Parse start_time and end_time from the provided strings
         start_time = datetime.strptime(start_time_str, '%Y-%m-%d')  
@@ -251,7 +255,6 @@ def download_data_excel(request, device_id, start_time_str, end_time_str):
     except Exception as e:
         return Response({'error': 'An error occurred while generating the Excel file'},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
