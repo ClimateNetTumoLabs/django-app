@@ -50,6 +50,7 @@ def preprocess_device_data(rows):
         })
     return device_data
 
+
 def compute_group_means(df, mean_interval):
     """Compute means for groups of data within the given interval."""
     num_records = len(df)
@@ -101,7 +102,7 @@ def compute_mean_for_time_range(df, start_time, end_time, mean_interval):
 
             for column in df.columns:
                 if column == 'time':
-                    continue  # Skip the time column
+                    continue
                 if pd.api.types.is_numeric_dtype(df[column].dtype):
                     mean_value = round(filtered_df[column].mean(), 2)
                     day_mean[column] = mean_value
@@ -119,6 +120,7 @@ def compute_mean_for_time_range(df, start_time, end_time, mean_interval):
             mean_data.append(None)
 
     return mean_data
+
 
 class DeviceDetailView(generics.ListAPIView):
     serializer_class = DeviceSerializer
@@ -149,7 +151,7 @@ class DeviceDetailView(generics.ListAPIView):
                     end_date = datetime.strptime(end_time_str, '%Y-%m-%d') 
                     + timedelta(days=1)
 
-                    if start_date >= end_date:
+                    if start_date > end_date:
                         return Response({'error': 'start_time_str should be '
                                                   'earlier than end_time_str'},
                                         status=status.HTTP_400_BAD_REQUEST)
@@ -167,15 +169,17 @@ class DeviceDetailView(generics.ListAPIView):
                         return device_data
                     else:
                         interval = (end_date - start_date).days
-                        if interval == 1:
+                        if interval <= 1:
                             group_means = compute_group_means(df, 4)
                         else:
                             mean_interval = 4 * interval
-                            group_means = compute_mean_for_time_range(df, start_date, end_date, mean_interval)
+                            group_means = compute_mean_for_time_range(df, start_date,
+                                    end_date, mean_interval)
 
                         return Response(group_means, status=status.HTTP_200_OK)
 
                 except ValueError:
+                    logger.error(f"An error occurred: {e}")
                     return Response({'error': 'Invalid date format in '
                                               'start_time_str or end_time_str'},
                                     status=status.HTTP_400_BAD_REQUEST)
@@ -202,6 +206,7 @@ class DeviceDetailView(generics.ListAPIView):
             return Response({'error': 'An error occurred while fetching the data.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
@@ -226,7 +231,10 @@ def download_data_excel(request, device_id):
         table_name = f'device{str(device_id)}'
 
         rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
-
+        if start_time == end_time - timedelta(days=1):
+            rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
+        else:
+            rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
         # Convert the rows to a list of dictionaries
         data = preprocess_device_data(rows)
 
@@ -256,9 +264,11 @@ def download_data_excel(request, device_id):
         return Response({'error': 'An error occurred while generating the Excel file'},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 class AboutPageViewSet(viewsets.ModelViewSet):
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
+
 
 class DeviceDetailViewSet(viewsets.ModelViewSet):
     queryset = DeviceDetail.objects.all()
