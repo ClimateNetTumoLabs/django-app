@@ -1,17 +1,9 @@
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
-from .serializers import (
-    DeviceSerializer, AboutPageSerializer,
-    DeviceDetailSerializer, FooterSerializer, ContactSerializer
-)
-from .models import Device, About, DeviceDetail, Footer, ContactUs
 import pandas as pd
-from rest_framework.decorators import action
 from datetime import datetime, timedelta
-from .db_connection import establish_postgresql_connection
 from .logger import logger
 from collections import Counter
-from openpyxl import Workbook
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 
