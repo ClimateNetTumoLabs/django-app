@@ -14,112 +14,8 @@ from collections import Counter
 from openpyxl import Workbook
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-
-def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
-    """Fetch data from the database within a time range."""
-    query = f"SELECT * FROM {table_name} WHERE time >= %s " \
-            f"AND time <= %s ORDER BY time ASC"
-    cursor.execute(query, [start_date, end_date])
-    rows = cursor.fetchall()
-    return rows
-
-def fetch_last_records(cursor, table_name):
-    """Fetch the last records from the database."""
-    query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
-            f"BY time DESC LIMIT 96) subquery ORDER BY time ASC;"
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    return rows
-
-def preprocess_device_data(rows):
-    """Process raw device data and return it in a structured format."""
-    device_data = []
-    for row in rows:
-        device_data.append({
-            'time': row[1],
-            'light': row[2],
-            'temperature': row[3],
-            'pressure': row[4],
-            'humidity': row[5],
-            'pm1': row[6],
-            'pm2_5': row[7],
-            'pm10': row[8],
-            'speed': row[9],
-            'rain': row[10],
-            'direction': row[11],
-        })
-    return device_data
-
-
-def compute_group_means(df, mean_interval):
-    """Compute means for groups of data within the given interval."""
-    num_records = len(df)
-    num_groups = num_records // mean_interval
-    group_means = []
-
-    for i in range(num_groups):
-        group_start = i * mean_interval
-        group_end = (i + 1) * mean_interval
-        group = df.iloc[group_start:group_end]
-
-        group_mean = {}
-
-        for column in group.columns:
-            if column == 'time':
-                time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                group_mean['time'] = mean_time_formatted
-            elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                mean_value = round(group[column].mean(), 2)
-                group_mean[column] = mean_value
-            else:
-                group_mean[column] = None
-        if not group.empty:
-            most_frequent_direction = Counter(group['direction']).most_common(1)[0][0]
-            group_mean['direction'] = most_frequent_direction
-        else:
-            group_mean['direction'] = None
-
-        group_means.append(group_mean)
-
-    return group_means
-
-
-def compute_mean_for_time_range(df, start_time, end_time, mean_interval):
-    """Compute means for each day within the given time range."""
-    num_records = len(df)
-    num_days = (end_time - start_time).days
-    mean_data = []
-
-    for i in range(num_days):
-        day_start = start_time + timedelta(days=i)
-        day_end = day_start + timedelta(days=1)
-        filtered_df = df[(df['time'] >= day_start) & (df['time'] < day_end)]
-
-        if not filtered_df.empty:
-            day_mean = {}
-            day_mean['time'] = day_start.strftime('%Y-%m-%d')
-
-            for column in df.columns:
-                if column == 'time':
-                    continue
-                if pd.api.types.is_numeric_dtype(df[column].dtype):
-                    mean_value = round(filtered_df[column].mean(), 2)
-                    day_mean[column] = mean_value
-                else:
-                    day_mean[column] = None
-
-            most_frequent_direction = Counter(filtered_df['direction']).most_common(1)
-            if most_frequent_direction:
-                day_mean['direction'] = most_frequent_direction[0][0]
-            else:
-                day_mean['direction'] = None
-
-            mean_data.append(day_mean)
-        else:
-            mean_data.append(None)
-
-    return mean_data
+from .fetch_data import fetch_data_with_time_range,fetch_last_records, preprocess_device_data
+from .count_means import compute_group_means, compute_mean_for_time_range
 
 
 class DeviceDetailView(generics.ListAPIView):
@@ -314,9 +210,11 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
         except DeviceDetail.DoesNotExist:
             return Response({"detail": "Device not found"}, status=404)
 
+
 class FooterViewSet(viewsets.ModelViewSet):
     queryset = Footer.objects.all()
     serializer_class = FooterSerializer
+
 
 class ContactUsViewSet(viewsets.ModelViewSet):
     queryset = ContactUs.objects.all()
@@ -330,3 +228,5 @@ class ContactUsViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Form submitted successfully'},
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
