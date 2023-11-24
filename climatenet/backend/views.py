@@ -134,6 +134,28 @@ class DeviceDetailView(generics.ListAPIView):
 
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
+        if start_time_str == end_time_str:
+            # Case where start_time_str equals end_time_str
+            cursor = establish_postgresql_connection().cursor()
+            if not cursor:
+                return Response({'error': 'Failed to establish a connection'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            table_name = f'device{str(device_id)}'
+            rows = fetch_last_records(cursor, table_name)
+            device_data = preprocess_device_data(rows)
+
+            df = pd.DataFrame(device_data)
+            df['time'] = pd.to_datetime(df['time'])
+
+            num_records = len(df)
+
+            if num_records < 24:
+                return device_data
+            else:
+                group_means = compute_group_means(df, 4)
+                return Response(group_means, status=status.HTTP_200_OK)
+
 
         try:
             cursor = establish_postgresql_connection().cursor()
