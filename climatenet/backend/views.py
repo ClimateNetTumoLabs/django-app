@@ -19,6 +19,11 @@ from .count_means import compute_group_means, compute_mean_for_time_range
 
 
 class DeviceDetailView(generics.ListAPIView):
+    """
+    Provides a detailed view of device data including 
+    querying by device ID and time range.
+
+    """
     serializer_class = DeviceSerializer
 
     def get_queryset(self):
@@ -60,7 +65,8 @@ class DeviceDetailView(generics.ListAPIView):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             table_name = f'device{str(device_id)}'
-
+            
+            #Case when filter is present
             if 'start_time_str' in self.request.query_params \
                 and 'end_time_str' in self.request.query_params:
 
@@ -101,7 +107,8 @@ class DeviceDetailView(generics.ListAPIView):
                     return Response({'error': 'Invalid date format in '
                                               'start_time_str or end_time_str'},
                                     status=status.HTTP_400_BAD_REQUEST)
-
+            
+            #Case when query is not present
             elif not self.request.query_params:
                 rows = fetch_last_records(cursor, table_name)
                 device_data = preprocess_device_data(rows)
@@ -153,6 +160,7 @@ def download_data_excel(request, device_id):
             rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
         else:
             rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
+
         # Convert the rows to a list of dictionaries
         data = preprocess_device_data(rows)
 
@@ -184,6 +192,9 @@ def download_data_excel(request, device_id):
 
 
 class AboutPageViewSet(viewsets.ModelViewSet):
+    """
+    Manages the API endpoints related to the 'About' page content.
+    """
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
 
@@ -212,11 +223,20 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
 
 
 class FooterViewSet(viewsets.ModelViewSet):
+    """
+    Manages the API endpoints and data related 
+    to the website footer.
+    """
     queryset = Footer.objects.all()
     serializer_class = FooterSerializer
 
 
 class ContactUsViewSet(viewsets.ModelViewSet):
+    """
+    Handles the API endpoints and operations related to 
+    contact forms and submissions.
+
+    """
     queryset = ContactUs.objects.all()
     serializer_class = ContactSerializer
 
