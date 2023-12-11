@@ -11,7 +11,7 @@ router.register(r'contact', ContactUsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    re_path(r'^download_data_excel/(?P<device_id>\d+)/(?P<start_time_str>[\d-]+)/(?P<end_time_str>[\d-]+)/?$', download_data_excel, name='download_data_excel'),
+    re_path(r'^download_data_excel/(?P<device_id>[\w-]+/?$)', download_data_excel, name='download_data_excel'),
     re_path(r'^devices/(?P<generated_id>[\w-]+)$', 
         RedirectView.as_view(url='/devices/%(generated_id)s/', permanent=True)),
     path('devices', DeviceDetailViewSet.as_view({'get': 'list'}), 

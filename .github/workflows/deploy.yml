@@ -1,0 +1,59 @@
+on:
+  push:
+    branches:
+      - main
+
+name: Deploy on push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "${{ env.PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Git Checkout and Pull
+        env:
+          HOSTNAME: ${{ secrets.EC2_IP }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem \
+            ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
+            cd /home/ubuntu/django-app && \
+            git checkout main && git stash && git pull origin main'
+
+      - name: Install Dependencies
+        env:
+          HOSTNAME: ${{ secrets.EC2_IP }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem \
+            ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
+            cd /home/ubuntu/django-app/climatenet/ && \
+            source venv/bin/activate && pip install -r requirements.txt'
+
+      - name: Restart Nginx
+        env:
+          HOSTNAME: ${{ secrets.EC2_IP }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem \
+            ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
+            sudo systemctl daemon-reload && \
+            sudo systemctl restart nginx'
+
+      - name: Collect Static and Restart Gunicorn
+        env:
+          HOSTNAME: ${{ secrets.EC2_IP }}
+          USER_NAME: ${{ secrets.EC2_USERNAME }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem \
+            ${{ env.USER_NAME }}@${{ env.HOSTNAME }} '
+            cd /home/ubuntu/django-app/climatenet/ && \
+            echo yes | python3 manage.py collectstatic && \
+            sudo systemctl restart gunicorn.service'
