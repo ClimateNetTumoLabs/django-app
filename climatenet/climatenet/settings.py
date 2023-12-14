@@ -28,7 +28,7 @@ REST_FRAMEWORK = {
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*'] 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -54,11 +54,14 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'compressor.middleware.CompressorMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+COMPRESS_ENABLED = True
 
 ROOT_URLCONF = 'climatenet.urls'
 
@@ -84,6 +87,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build/static')
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
