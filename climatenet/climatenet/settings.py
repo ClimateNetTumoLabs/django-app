@@ -28,12 +28,10 @@ REST_FRAMEWORK = {
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*'] 
 CORS_ORIGIN_ALLOW_ALL = False
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,20 +46,17 @@ INSTALLED_APPS = [
 
 ]
 MIDDLEWARE = [
-        #'whitenoise.middleware.WhiteNoiseMiddleware',
+   # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'compressor.middleware.CompressorMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 ]
-
-COMPRESS_ENABLED = True
 
 ROOT_URLCONF = 'climatenet.urls'
 
@@ -71,7 +66,7 @@ APPEND_SLASH = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build')],
+        'DIRS': [os.path.join(BASE_DIR, '/home/ubuntu/frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,8 +81,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build/static')
-
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -145,9 +138,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = 'static'
-
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 CORS_ORIGIN_WHITELIST = [
     "https://localhost:3000",
     "http://localhost:8000",
@@ -164,11 +156,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1",
     "https://127.0.0.1:8000",
     "http://127.0.0.1:8000",
-    "http://climatenet.am"
+    "http://climatenet.am",
+    "https://climatenet.am"
 
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -237,3 +230,12 @@ CORS_ALLOW_METHODS = [
     'POST',
     'PUT',
 ]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'your-smtp-server.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'marina.melkonyan.y@tumo.org'
+EMAIL_HOST_PASSWORD = 'marinasyuzi'
+
