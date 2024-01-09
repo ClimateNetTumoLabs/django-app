@@ -81,6 +81,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "/home/ubuntu/frontend/build/static"),
 ]
 
 CORS_ALLOW_CREDENTIALS = True
