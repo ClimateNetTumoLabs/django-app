@@ -14,7 +14,7 @@ from collections import Counter
 from openpyxl import Workbook
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-from .fetch_data import fetch_data_with_time_range,fetch_last_records, preprocess_device_data
+from .fetch_data import fetch_data_with_time_range,fetch_last_records, preprocess_device_data, preprocess_device_data_new
 from .count_means import compute_group_means, compute_mean_for_time_range
 
 
@@ -44,15 +44,17 @@ class DeviceDetailView(generics.ListAPIView):
 
             table_name = f'device{str(device_id)}'
             rows = fetch_last_records(cursor, table_name)
-            device_data = preprocess_device_data(rows)
-
+            if int(device_id) == 8:
+                device_data = preprocess_device_data(rows)
+            else:
+                device_data = preprocess_device_data_new(rows)
             df = pd.DataFrame(device_data)
             df['time'] = pd.to_datetime(df['time'])
 
             num_records = len(df)
 
             if num_records < 24:
-                return device_data
+                return Response(device_data, status=status.HTTP_200_OK)
             else:
                 group_means = compute_group_means(df, 4)
                 return Response(group_means, status=status.HTTP_200_OK)

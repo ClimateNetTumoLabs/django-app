@@ -37,4 +37,24 @@ def preprocess_device_data(rows):
         })
     return device_data
 
+def preprocess_device_data_new(rows):
+    device_data = []
+    for row in rows:
+        device_data.append({
+            'time': row[1],
+            'light_vis': row[2],
+            'light_uv': row[3],
+            'light_ir': row[4],
+            'temperature': row[5],
+            'pressure': row[6],
+            'humidity': row[7],
+            'pm1': row[8],
+            'pm2_5': row[9],
+            'pm10': row[10],
+            'speed': row[20],
+            'rain': row[21],
+            'direction': row[22],
+        })
+    return device_data
+
 
