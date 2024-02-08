@@ -28,10 +28,10 @@ REST_FRAMEWORK = {
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*'] 
-
+CORS_ORIGIN_ALLOW_ALL = False
 
 # Application definition
 
@@ -47,8 +47,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
 ]
-
 MIDDLEWARE = [
+        #'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -61,10 +62,13 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'climatenet.urls'
 
+CSRF_TRUSTED_ORIGINS = ['https://*.climatenet.am'] 
+APPEND_SLASH = True
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,8 +82,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'climatenet.wsgi.application'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build/static')
+]
 
-
+CORS_ALLOW_CREDENTIALS = True
+WHITENOISE_USE_FINDERS = True
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -136,11 +144,27 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = 'static'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000"
-    # Add other allowed origins here if needed
+CORS_ORIGIN_WHITELIST = [
+    "https://localhost:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://climatenet.am",
+    "https://climatennet.am"
 ]
 
+
+CORS_ALLOWED_ORIGINS = [
+    "https://localhost:3000",
+    "http://localhost:8000",
+    "https://127.0.0.1",
+    "http://127.0.0.1",
+    "https://127.0.0.1:8000",
+    "http://127.0.0.1:8000",
+    "http://climatenet.am"
+
+]
+
+CORS_ALLOW_ALL_ORIGINS = True
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -172,7 +196,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console'],
-        'level': 'INFO',  # Set this to the desired logging level (DEBUG, INFO, WARNING, ERROR, etc.)
+        'level': 'INFO',  # Set this to the desired logging level (DEBUB)
     },
     'loggers': {
         'django': {
@@ -188,3 +212,24 @@ LOGGING = {
     },
 }
 
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'access-control-allow-origin',  # Add this header
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]

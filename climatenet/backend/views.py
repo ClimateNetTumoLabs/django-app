@@ -10,73 +10,21 @@ from rest_framework.decorators import action
 from datetime import datetime, timedelta
 from .db_connection import establish_postgresql_connection
 from .logger import logger
+from collections import Counter
+from openpyxl import Workbook
+from django.http import HttpResponse
+from rest_framework.decorators import api_view
+from .fetch_data import fetch_data_with_time_range, fetch_last_records, preprocess_device_data, \
+    preprocess_device_data_new
+from .count_means import compute_group_means, compute_mean_for_time_range
 
-
-def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
-    """Fetch data from the database within a time range."""
-    query = f"SELECT * FROM {table_name} WHERE time >= %s " \
-            f"AND time <= %s ORDER BY time ASC"
-    cursor.execute(query, [start_date, end_date])
-    rows = cursor.fetchall()
-    return rows
-
-def fetch_last_records(cursor, table_name):
-    """Fetch the last records from the database."""
-    query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
-            f"BY time DESC LIMIT 96) subquery ORDER BY time ASC;"
-    cursor.execute(query)
-    rows = cursor.fetchall()
-    return rows
-
-def preprocess_device_data(rows):
-    """Process raw device data and return it in a structured format."""
-    device_data = []
-    for row in rows:
-        device_data.append({
-            'time': row[1],
-            'light': row[2],
-            'temperature': row[3],
-            'pressure': row[4],
-            'humidity': row[5],
-            'pm1': row[6],
-            'pm2_5': row[7],
-            'pm10': row[8],
-            'co2': row[9],
-            'speed': row[10],
-            'rain': row[11],
-            'direction': row[12],
-        })
-    return device_data
-
-def compute_group_means(df, mean_interval):
-    """Compute means for groups of data within the given interval."""
-    num_records = len(df)
-    num_groups = num_records // mean_interval
-    group_means = []
-
-    for i in range(num_groups):
-        group_start = i * mean_interval
-        group_end = (i + 1) * mean_interval
-        group = df.iloc[group_start:group_end]
-
-        group_mean = {}
-
-        for column in group.columns:
-            if column == 'time':
-                time_mean = group['time'].apply(lambda x: pd.to_datetime(x)).mean()
-                mean_time_formatted = time_mean.strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-                group_mean['time'] = mean_time_formatted
-            elif pd.api.types.is_numeric_dtype(group[column].dtype):
-                mean_value = round(group[column].mean(), 2)
-                group_mean[column] = mean_value
-            else:
-                group_mean[column] = None
-
-        group_means.append(group_mean)
-
-    return group_means
 
 class DeviceDetailView(generics.ListAPIView):
+    """
+    Provides a detailed view of device data including
+    querying by device ID and time range.
+
+    """
     serializer_class = DeviceSerializer
 
     def get_queryset(self):
@@ -88,6 +36,29 @@ class DeviceDetailView(generics.ListAPIView):
 
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
+        if start_time_str == end_time_str:
+            # Case where start_time_str equals end_time_str
+            cursor = establish_postgresql_connection().cursor()
+            if not cursor:
+                return Response({'error': 'Failed to establish a connection'},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            table_name = f'device{str(device_id)}'
+            rows = fetch_last_records(cursor, table_name)
+            if int(device_id) == 8:
+                device_data = preprocess_device_data(rows)
+            else:
+                device_data = preprocess_device_data_new(rows)
+            df = pd.DataFrame(device_data)
+            df['time'] = pd.to_datetime(df['time'])
+
+            num_records = len(df)
+
+            if num_records < 24:
+                return Response(device_data, status=status.HTTP_200_OK)
+            else:
+                group_means = compute_group_means(df, 4)
+                return Response(group_means, status=status.HTTP_200_OK)
 
         try:
             cursor = establish_postgresql_connection().cursor()
@@ -97,19 +68,22 @@ class DeviceDetailView(generics.ListAPIView):
 
             table_name = f'device{str(device_id)}'
 
+            # Case when filter is present
             if 'start_time_str' in self.request.query_params \
-                and 'end_time_str' in self.request.query_params:
+                    and 'end_time_str' in self.request.query_params:
 
                 try:
                     start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
+                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
+                    + timedelta(days=1)
 
-                    if start_date >= end_date:
+                    if start_date > end_date:
                         return Response({'error': 'start_time_str should be '
                                                   'earlier than end_time_str'},
                                         status=status.HTTP_400_BAD_REQUEST)
 
-                    rows = fetch_data_with_time_range(cursor, table_name, start_date, end_date)
+                    rows = fetch_data_with_time_range(cursor, table_name,
+                                                      start_date, end_date)
                     device_data = preprocess_device_data(rows)
 
                     df = pd.DataFrame(device_data)
@@ -121,17 +95,22 @@ class DeviceDetailView(generics.ListAPIView):
                         return device_data
                     else:
                         interval = (end_date - start_date).days
-                        mean_interval = 4 if interval == 1 else 4 * interval
-
-                        group_means = compute_group_means(df, mean_interval)
+                        if interval <= 1:
+                            group_means = compute_group_means(df, 4)
+                        else:
+                            mean_interval = 4 * interval
+                            group_means = compute_mean_for_time_range(df, start_date,
+                                                                      end_date, mean_interval)
 
                         return Response(group_means, status=status.HTTP_200_OK)
 
                 except ValueError:
+                    logger.error(f"An error occurred: {e}")
                     return Response({'error': 'Invalid date format in '
                                               'start_time_str or end_time_str'},
                                     status=status.HTTP_400_BAD_REQUEST)
 
+            # Case when query is not present
             elif not self.request.query_params:
                 rows = fetch_last_records(cursor, table_name)
                 device_data = preprocess_device_data(rows)
@@ -164,9 +143,62 @@ class DeviceDetailView(generics.ListAPIView):
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+def download_data_excel(request, device_id):
+    start_time_str = request.GET.get('start_time_str')
+    end_time_str = request.GET.get('end_time_str')
+
+    try:
+        # Parse start_time and end_time from the provided strings
+        start_time = datetime.strptime(start_time_str, '%Y-%m-%d')
+        end_time = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
+
+        cursor = establish_postgresql_connection().cursor()
+        table_name = f'device{str(device_id)}'
+
+        rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
+        if start_time == end_time - timedelta(days=1):
+            rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
+        else:
+            rows = fetch_data_with_time_range(cursor, table_name, start_time, end_time)
+
+        # Convert the rows to a list of dictionaries
+        data = preprocess_device_data(rows)
+
+        # Create a new Excel workbook and add a worksheet
+        wb = Workbook()
+        ws = wb.active
+
+        # Add a header row with column names
+        header = ['Time', 'Light', 'Temperature', 'Pressure', 'Humidity', 'PM1',
+                  'PM2.5', 'PM10', 'Speed', 'Rain', 'Direction']
+        ws.append(header)
+
+        # Add data rows to the worksheet
+        for row in data:
+            ws.append(list(row.values()))
+
+        # Create an HTTP response with the Excel content
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'filename=data_{start_time_str}_{end_time_str}.xlsx'
+
+        # Save the workbook content to the response
+        wb.save(response)
+
+        return response
+
+    except Exception as e:
+        return Response({'error': 'An error occurred while generating the Excel file'},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 class AboutPageViewSet(viewsets.ModelViewSet):
+    """
+    Manages the API endpoints related to the 'About' page content.
+    """
     queryset = About.objects.all()
     serializer_class = AboutPageSerializer
+
 
 class DeviceDetailViewSet(viewsets.ModelViewSet):
     queryset = DeviceDetail.objects.all()
@@ -190,11 +222,21 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
         except DeviceDetail.DoesNotExist:
             return Response({"detail": "Device not found"}, status=404)
 
+
 class FooterViewSet(viewsets.ModelViewSet):
+    """
+    Manages the API endpoints and data related
+    to the website footer.
+    """
     queryset = Footer.objects.all()
     serializer_class = FooterSerializer
 
+
 class ContactUsViewSet(viewsets.ModelViewSet):
+    """
+    Handles the API endpoints and operations related to
+    contact forms and submissions.
+    """
     queryset = ContactUs.objects.all()
     serializer_class = ContactSerializer
 
