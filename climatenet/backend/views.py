@@ -54,6 +54,7 @@ class DeviceDetailView(generics.ListAPIView):
 
             num_records = len(df)
 
+
             if num_records < 24:
                 return Response(device_data, status=status.HTTP_200_OK)
             else:
