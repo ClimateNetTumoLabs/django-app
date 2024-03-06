@@ -51,6 +51,7 @@ class DeviceDetailView(generics.ListAPIView):
                 device_data = preprocess_device_data_new(rows)
             df = pd.DataFrame(device_data)
             df['time'] = pd.to_datetime(df['time'])
+
             num_records = len(df)
 
             if num_records < 24:
