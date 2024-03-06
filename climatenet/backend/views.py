@@ -14,13 +14,14 @@ from collections import Counter
 from openpyxl import Workbook
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
-from .fetch_data import fetch_data_with_time_range,fetch_last_records, preprocess_device_data, preprocess_device_data_new
+from .fetch_data import fetch_data_with_time_range, fetch_last_records, preprocess_device_data, \
+    preprocess_device_data_new
 from .count_means import compute_group_means, compute_mean_for_time_range
 
 
 class DeviceDetailView(generics.ListAPIView):
     """
-    Provides a detailed view of device data including 
+    Provides a detailed view of device data including
     querying by device ID and time range.
 
     """
@@ -58,7 +59,6 @@ class DeviceDetailView(generics.ListAPIView):
                 group_means = compute_group_means(df, 4)
                 return Response(group_means, status=status.HTTP_200_OK)
 
-
         try:
             cursor = establish_postgresql_connection().cursor()
             if not cursor:
@@ -66,14 +66,14 @@ class DeviceDetailView(generics.ListAPIView):
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             table_name = f'device{str(device_id)}'
-            
-            #Case when filter is present
+
+            # Case when filter is present
             if 'start_time_str' in self.request.query_params \
-                and 'end_time_str' in self.request.query_params:
+                    and 'end_time_str' in self.request.query_params:
 
                 try:
                     start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
-                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d') 
+                    end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
                     + timedelta(days=1)
 
                     if start_date > end_date:
@@ -81,8 +81,8 @@ class DeviceDetailView(generics.ListAPIView):
                                                   'earlier than end_time_str'},
                                         status=status.HTTP_400_BAD_REQUEST)
 
-                    rows = fetch_data_with_time_range(cursor, table_name, 
-                            start_date, end_date)
+                    rows = fetch_data_with_time_range(cursor, table_name,
+                                                      start_date, end_date)
                     device_data = preprocess_device_data(rows)
 
                     df = pd.DataFrame(device_data)
@@ -99,7 +99,7 @@ class DeviceDetailView(generics.ListAPIView):
                         else:
                             mean_interval = 4 * interval
                             group_means = compute_mean_for_time_range(df, start_date,
-                                    end_date, mean_interval)
+                                                                      end_date, mean_interval)
 
                         return Response(group_means, status=status.HTTP_200_OK)
 
@@ -108,8 +108,8 @@ class DeviceDetailView(generics.ListAPIView):
                     return Response({'error': 'Invalid date format in '
                                               'start_time_str or end_time_str'},
                                     status=status.HTTP_400_BAD_REQUEST)
-            
-            #Case when query is not present
+
+            # Case when query is not present
             elif not self.request.query_params:
                 rows = fetch_last_records(cursor, table_name)
                 device_data = preprocess_device_data(rows)
@@ -132,7 +132,6 @@ class DeviceDetailView(generics.ListAPIView):
             return Response({'error': 'An error occurred while fetching the data.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
     def list(self, request, *args, **kwargs):
         try:
             queryset = self.get_queryset()
@@ -150,7 +149,7 @@ def download_data_excel(request, device_id):
 
     try:
         # Parse start_time and end_time from the provided strings
-        start_time = datetime.strptime(start_time_str, '%Y-%m-%d')  
+        start_time = datetime.strptime(start_time_str, '%Y-%m-%d')
         end_time = datetime.strptime(end_time_str, '%Y-%m-%d') + timedelta(days=1)
 
         cursor = establish_postgresql_connection().cursor()
@@ -170,8 +169,8 @@ def download_data_excel(request, device_id):
         ws = wb.active
 
         # Add a header row with column names
-        header = ['Time', 'Light', 'Temperature', 'Pressure', 'Humidity', 'PM1', 
-                'PM2.5', 'PM10', 'Speed', 'Rain', 'Direction']
+        header = ['Time', 'Light', 'Temperature', 'Pressure', 'Humidity', 'PM1',
+                  'PM2.5', 'PM10', 'Speed', 'Rain', 'Direction']
         ws.append(header)
 
         # Add data rows to the worksheet
@@ -225,7 +224,7 @@ class DeviceDetailViewSet(viewsets.ModelViewSet):
 
 class FooterViewSet(viewsets.ModelViewSet):
     """
-    Manages the API endpoints and data related 
+    Manages the API endpoints and data related
     to the website footer.
     """
     queryset = Footer.objects.all()
@@ -234,9 +233,8 @@ class FooterViewSet(viewsets.ModelViewSet):
 
 class ContactUsViewSet(viewsets.ModelViewSet):
     """
-    Handles the API endpoints and operations related to 
+    Handles the API endpoints and operations related to
     contact forms and submissions.
-
     """
     queryset = ContactUs.objects.all()
     serializer_class = ContactSerializer
@@ -249,5 +247,3 @@ class ContactUsViewSet(viewsets.ModelViewSet):
             return Response({'message': 'Form submitted successfully'},
                             status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-
