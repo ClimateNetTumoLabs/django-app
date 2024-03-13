@@ -16,4 +16,7 @@ backend/migrations/__pycache_/
 *backend/migrations/__pycache_/
 
 /Test
+
+.idea/
+
 */Test

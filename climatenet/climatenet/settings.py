@@ -28,7 +28,7 @@ REST_FRAMEWORK = {
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*'] 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -68,7 +68,7 @@ APPEND_SLASH = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build')],
+        'DIRS': [os.path.join(BASE_DIR, '/Users/hovo/workspace/climatenet/frontend/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,9 +81,10 @@ TEMPLATES = [
     },
 ]
 
+print(TEMPLATES[0]["DIRS"])
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, '/Users/eriksaryan/workspace/frontend/build/static')
+    os.path.join(BASE_DIR, '/Users/hovo/workspace/climatenet/frontend/build/static')
 ]
 
 CORS_ALLOW_CREDENTIALS = True
