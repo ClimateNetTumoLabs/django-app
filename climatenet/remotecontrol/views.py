@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import logout
 from django.views.decorators.cache import never_cache
-from django.contrib import messages
+from backend.models import DeviceDetail
+from .config import S3_SECRET_KEY, S3_ACCESS_KEY, MQTT_BROKER_ENDPOINT
+from .s3 import S3Manager
 import paho.mqtt.client as mqtt
 import os
 import ssl
@@ -16,6 +18,8 @@ results = {
 
 current_working_directory = os.getcwd()
 
+s3_manager = S3Manager(S3_ACCESS_KEY, S3_SECRET_KEY)
+
 
 class MqttClient:
     def __init__(self):
@@ -26,7 +30,7 @@ class MqttClient:
             keyfile=os.path.join(current_working_directory, 'remotecontrol/mqtt_certificates/private.pem.key'),
             tls_version=ssl.PROTOCOL_SSLv23)
         self.client.tls_insecure_set(True)
-        self.client.connect("a3b2v7yks3ewbi-ats.iot.us-east-1.amazonaws.com", 8883, 60)
+        self.client.connect(MQTT_BROKER_ENDPOINT, 8883, 60)
         self.client.on_message = self.process_message
         self.client.subscribe("raspberry/response", qos=1)
 
@@ -43,29 +47,18 @@ class MqttClient:
 
 def logout_user(request):
     logout(request)
-    return redirect('remote-control-login')
-
-
-@never_cache
-def login_user(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect('remote-control')
-        else:
-            messages.success(request, "Something Wrong")
-            return redirect('remote-control-login')
-    else:
-        return render(request, 'authenticate/login.html', {})
+    return redirect('/admin/login/?next=/remote-control/')
 
 
 @never_cache
 def home(request):
-    return render(request, 'remote_control/home.html')
+    s3_files = s3_manager.list_files()
+    device_list = DeviceDetail.objects.all()
+    context = {
+        'device_list': device_list,
+        's3_files': s3_files
+    }
+    return render(request, 'remote_control/home.html', context)
 
 
 def get_result(mqtt_request):
@@ -78,7 +71,7 @@ def get_result(mqtt_request):
     result = "Timeout Error"
 
     start_time = time.time()
-    while time.time() - start_time < 15:
+    while time.time() - start_time < 60:
         if one_time_token in results:
             result = results[one_time_token]
             del results[one_time_token]

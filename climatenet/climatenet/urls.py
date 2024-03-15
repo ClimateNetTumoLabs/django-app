@@ -7,12 +7,12 @@ from django.shortcuts import HttpResponseRedirect
 
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='index.html')),
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
     re_path(r'^admin$', lambda x: HttpResponseRedirect('/admin/')),
     path('admin/', admin.site.urls),
     path('', include('backend.urls')),
     path('device_cl/<str:device_id>', TemplateView.as_view(template_name='index.html')),
-    re_path("about", TemplateView.as_view(template_name='index.html')),
+    re_path("about", TemplateView.as_view(template_name='index.html'), name='about'),
     path('remote-control/', include('remotecontrol.urls')),
 ]
 

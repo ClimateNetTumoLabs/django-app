@@ -9,7 +9,9 @@
     </head>
     <body>
         <header>
-            <div class="logout-container">
+            <div class="header-container">
+                <a href="{% url 'home' %}">View site</a>
+                <a href="{% url 'admin:index' %}">Admin</a>
                 <form action="{% url 'remote-control-logout' %}" method="post">
                     {% csrf_token %}
                     <button type="submit">Log Out</button>
@@ -24,8 +26,14 @@
             <button id="fileTransferButton" onclick="openForm('fileTransfer')">File Transfer Form</button>
             <div id="commandForm" style="display: block;" class="form-container">
                 <h2>Command Request</h2>
-                <form onsubmit="submitForm(event, 'commandResult')" action="{% url 'submit_command_request' %}" method="POST"> {% csrf_token %} <label for="deviceId">DeviceID:</label>
-                    <input type="number" id="deviceId" name="deviceId" min="1" step="1">
+                <form onsubmit="submitForm(event, 'commandResult')" action="{% url 'submit_command_request' %}" method="POST">
+                    {% csrf_token %}
+                    <label for="deviceId">Device:</label>
+                    <select id="deviceId" name="deviceId">
+                        {% for device in device_list %}
+                            <option value="{{ device.generated_id }}">{{ device.name }}   ({{ device.generated_id }})</option>
+                        {% endfor %}
+                    </select>
                     <label for="command">Command:</label>
                     <textarea id="command" name="command"></textarea>
                     <button type="submit">Submit</button>
@@ -34,8 +42,14 @@
             </div>
             <div id="commandFileForm" class="form-container">
                 <h2>Command Result File Request</h2>
-                <form onsubmit="submitForm(event, 'commandFileResult')" action="{% url 'submit_command_file_request' %}" method="POST"> {% csrf_token %} <label for="commandFileDeviceId">DeviceID:</label>
-                    <input type="number" id="commandFileDeviceId" name="commandFileDeviceId" min="1" step="1">
+                <form onsubmit="submitForm(event, 'commandFileResult')" action="{% url 'submit_command_file_request' %}" method="POST">
+                    {% csrf_token %}
+                    <label for="commandFileDeviceId">DeviceID:</label>
+                    <select id="commandFileDeviceId" name="commandFileDeviceId">
+                        {% for device in device_list %}
+                            <option value="{{ device.generated_id }}">{{ device.name }}   ({{ device.generated_id }})</option>
+                        {% endfor %}
+                    </select>
                     <label for="commandFileCommand">Command:</label>
                     <textarea id="commandFileCommand" name="commandFileCommand"></textarea>
                     <button type="submit">Submit</button>
@@ -44,8 +58,14 @@
             </div>
             <div id="fileForm" class="form-container">
                 <h2>File Request</h2>
-                <form onsubmit="submitForm(event, 'fileResult')" action="{% url 'submit_file_request' %}" method="POST"> {% csrf_token %} <label for="fileDeviceId">DeviceID:</label>
-                    <input type="number" id="fileDeviceId" name="fileDeviceId" min="1" step="1">
+                <form onsubmit="submitForm(event, 'fileResult')" action="{% url 'submit_file_request' %}" method="POST">
+                    {% csrf_token %}
+                    <label for="fileDeviceId">DeviceID:</label>
+                    <select id="fileDeviceId" name="fileDeviceId">
+                        {% for device in device_list %}
+                            <option value="{{ device.generated_id }}">{{ device.name }}   ({{ device.generated_id }})</option>
+                        {% endfor %}
+                    </select>
                     <label for="filePath">File Path:</label>
                     <input type="text" id="filePath" name="filePath">
                     <button type="submit">Submit</button>
@@ -54,10 +74,20 @@
             </div>
             <div id="fileTransferForm" class="form-container">
                 <h2>File Transfer</h2>
-                <form onsubmit="submitForm(event, 'fileTransferResult')" action="{% url 'submit_file_transfer' %}" method="POST"> {% csrf_token %} <label for="fileTransferDeviceId">DeviceID:</label>
-                    <input type="number" id="fileTransferDeviceId" name="fileTransferDeviceId" min="1" step="1">
+                <form onsubmit="submitForm(event, 'fileTransferResult')" action="{% url 'submit_file_transfer' %}" method="POST">
+                    {% csrf_token %}
+                    <label for="fileTransferDeviceId">DeviceID:</label>
+                    <select id="fileTransferDeviceId" name="fileTransferDeviceId">
+                        {% for device in device_list %}
+                            <option value="{{ device.generated_id }}">{{ device.name }}   ({{ device.generated_id }})</option>
+                        {% endfor %}
+                    </select>
                     <label for="fileTransferS3Key">S3 File Key:</label>
-                    <input type="text" id="fileTransferS3Key" name="fileTransferS3Key">
+                    <select id="fileTransferS3Key" name="fileTransferS3Key">
+                        {% for file in s3_files %}
+                            <option value="{{ file }}">{{ file }}</option>
+                        {% endfor %}
+                    </select>
                     <label for="fileTransferDestination">Destination Path:</label>
                     <input type="text" id="fileTransferDestination" name="fileTransferDestination">
                     <button type="submit">Submit</button>

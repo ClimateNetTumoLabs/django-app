@@ -45,8 +45,8 @@ label {
 }
 
 input[type="text"],
-input[type="number"],
-textarea {
+textarea,
+select {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
@@ -91,14 +91,14 @@ header {
     margin-bottom: 20px; /* Добавляем небольшой отступ снизу */
 }
 
-.logout-container {
+.header-container {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     right: 20px;
 }
 
-.logout-container button {
+.header-container button {
     background-color: #417690;
     color: #fff;
     padding: 8px 16px;
@@ -108,6 +108,29 @@ header {
     transition: background-color 0.3s ease;
 }
 
-.logout-container button:hover {
+.header-container button:hover {
     background-color: #bdbdbd;
+}
+
+.header-container a {
+    background-color: #417690;
+    color: #fff;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin: 5px;
+    max-height: 15px;
+    text-decoration: none;
+    font-family: Arial;
+    font-size: small;
+}
+
+.header-container a:hover {
+    background-color: #bdbdbd; /* Цвет при наведении */
+}
+
+.header-container {
+    display: flex; /* Располагаем элементы в строку */
 }

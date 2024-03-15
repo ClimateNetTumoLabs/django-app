@@ -60,7 +60,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-LOGIN_URL = '/remote-control/login'
+LOGIN_URL = '/admin/login/'
 
 ROOT_URLCONF = 'climatenet.urls'
 
