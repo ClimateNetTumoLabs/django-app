@@ -20,3 +20,6 @@ backend/migrations/__pycache_/
 .idea/
 
 */Test
+
+climatenet/remotecontrol/mqtt_certificates/
+climatenet/static/

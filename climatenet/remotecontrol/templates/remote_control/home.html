@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Remote Control</title>
+        <link rel="stylesheet" href="{% static 'remote_control/css/home.css' %}">
+    </head>
+    <body>
+        <header>
+            <div class="logout-container">
+                <form action="{% url 'remote-control-logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit">Log Out</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="container">
+            <button id="commandButton" style="background-color: #1e3744" onclick="openForm('command')">Command Request Form</button>
+            <button id="fileButton" onclick="openForm('file')">File Request Form</button>
+            <button id="commandFileButton" onclick="openForm('commandFile')">Command File Request Form</button>
+            <button id="fileTransferButton" onclick="openForm('fileTransfer')">File Transfer Form</button>
+            <div id="commandForm" style="display: block;" class="form-container">
+                <h2>Command Request</h2>
+                <form onsubmit="submitForm(event, 'commandResult')" action="{% url 'submit_command_request' %}" method="POST"> {% csrf_token %} <label for="deviceId">DeviceID:</label>
+                    <input type="number" id="deviceId" name="deviceId" min="1" step="1">
+                    <label for="command">Command:</label>
+                    <textarea id="command" name="command"></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+                <pre id="commandResult" style="display: block;" class="result-container"></pre>
+            </div>
+            <div id="commandFileForm" class="form-container">
+                <h2>Command Result File Request</h2>
+                <form onsubmit="submitForm(event, 'commandFileResult')" action="{% url 'submit_command_file_request' %}" method="POST"> {% csrf_token %} <label for="commandFileDeviceId">DeviceID:</label>
+                    <input type="number" id="commandFileDeviceId" name="commandFileDeviceId" min="1" step="1">
+                    <label for="commandFileCommand">Command:</label>
+                    <textarea id="commandFileCommand" name="commandFileCommand"></textarea>
+                    <button type="submit">Submit</button>
+                </form>
+                <div id="commandFileResult" class="result-container"></div>
+            </div>
+            <div id="fileForm" class="form-container">
+                <h2>File Request</h2>
+                <form onsubmit="submitForm(event, 'fileResult')" action="{% url 'submit_file_request' %}" method="POST"> {% csrf_token %} <label for="fileDeviceId">DeviceID:</label>
+                    <input type="number" id="fileDeviceId" name="fileDeviceId" min="1" step="1">
+                    <label for="filePath">File Path:</label>
+                    <input type="text" id="filePath" name="filePath">
+                    <button type="submit">Submit</button>
+                </form>
+                <div id="fileResult" class="result-container"></div>
+            </div>
+            <div id="fileTransferForm" class="form-container">
+                <h2>File Transfer</h2>
+                <form onsubmit="submitForm(event, 'fileTransferResult')" action="{% url 'submit_file_transfer' %}" method="POST"> {% csrf_token %} <label for="fileTransferDeviceId">DeviceID:</label>
+                    <input type="number" id="fileTransferDeviceId" name="fileTransferDeviceId" min="1" step="1">
+                    <label for="fileTransferS3Key">S3 File Key:</label>
+                    <input type="text" id="fileTransferS3Key" name="fileTransferS3Key">
+                    <label for="fileTransferDestination">Destination Path:</label>
+                    <input type="text" id="fileTransferDestination" name="fileTransferDestination">
+                    <button type="submit">Submit</button>
+                </form>
+                <pre id="fileTransferResult" class="result-container"></pre>
+            </div>
+        </div>
+        <script>
+            function openForm(formName) {
+                var i, formContainer, tablinks;
+                formContainer = document.getElementsByClassName("form-container");
+                for (i = 0; i < formContainer.length; i++) {
+                    formContainer[i].style.display = "none";
+                }
+                document.querySelectorAll('.container button').forEach(button => {
+                    button.style.backgroundColor = '#417690';
+                });
+
+                document.getElementById(formName + "Button").style.backgroundColor = '#1e3744';
+                document.getElementById(formName + "Form").style.display = "block";
+                document.getElementById(formName + "Result").style.display = "block";
+            }
+            async function submitForm(event, resultId) {
+                event.preventDefault();
+                const form = event.target;
+                const formData = new FormData(form);
+                const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+                formData.append('csrfmiddlewaretoken', csrfToken);
+                document.getElementById(resultId).innerText = "";
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    let result = await response.text();
+                    document.getElementById(resultId).innerHTML = result;
+                } else {
+                    console.error('Failed to submit form');
+                }
+            }
+        </script>
+    </body>
+</html>
