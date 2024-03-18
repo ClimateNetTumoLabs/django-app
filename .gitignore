@@ -24,3 +24,5 @@ backend/migrations/__pycache_/
 climatenet/remotecontrol/mqtt_certificates/
 climatenet/static/
 climatenet/remotecontrol/config.py
+
+.DS_Store
