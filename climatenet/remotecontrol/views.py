@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.contrib.auth import logout
 from django.views.decorators.cache import never_cache
 from backend.models import DeviceDetail
-from .config import S3_SECRET_KEY, S3_ACCESS_KEY, MQTT_BROKER_ENDPOINT
-from .s3 import S3Manager
+from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY, MQTT_BROKER_ENDPOINT
+from .s3 import S3Manager, BUCKET_TO_RASPBERRY, BUCKET_FROM_RASPBERRY
 import paho.mqtt.client as mqtt
 import os
 import ssl
@@ -18,7 +18,7 @@ results = {
 
 current_working_directory = os.getcwd()
 
-s3_manager = S3Manager(S3_ACCESS_KEY, S3_SECRET_KEY)
+s3_manager = S3Manager(IAM_SECRET_KEY, IAM_ACCESS_KEY)
 
 
 class MqttClient:
@@ -38,7 +38,6 @@ class MqttClient:
         message = json.loads(msg.payload.decode("utf-8"))
         request_id = message.get("RequestID")
         results[request_id] = message
-        self.client.loop_stop()
 
     def publish(self, request):
         self.client.publish("raspberry/request", json.dumps(request))
@@ -52,8 +51,8 @@ def logout_user(request):
 
 @never_cache
 def home(request):
-    s3_files = s3_manager.list_files()
-    device_list = DeviceDetail.objects.all()
+    s3_files = s3_manager.list_files(bucket=BUCKET_TO_RASPBERRY)
+    device_list = DeviceDetail.objects.all().order_by('parent_name', 'name')
     context = {
         'device_list': device_list,
         's3_files': s3_files
@@ -68,6 +67,19 @@ def get_result(mqtt_request):
     client = MqttClient()
     client.publish(mqtt_request)
 
+    start_time = time.time()
+    status = False
+    while time.time() - start_time < 5:
+        if one_time_token in results:
+            result = results[one_time_token]
+            if result.get("status") == "OK":
+                status = True
+            del results[one_time_token]
+            break
+    if not status:
+        client.client.loop_stop()
+        return HttpResponse("Device Not Responding")
+
     result = "Timeout Error"
 
     start_time = time.time()
@@ -77,14 +89,15 @@ def get_result(mqtt_request):
             del results[one_time_token]
             break
 
+    client.client.loop_stop()
+
     if "result" in result:
         return HttpResponse(result["result"])
     elif "file_key_s3" in result:
-        link = f'https://s3.console.aws.amazon.com/s3/object/raspberry-file-transfer?region=us-east-1' \
+        link = f'https://s3.console.aws.amazon.com/s3/object/{BUCKET_FROM_RASPBERRY}?region=us-east-1' \
                f'&bucketType=general&prefix={result["file_key_s3"]}'
 
         res = f'<a href="{link}" target="_blank">File Link</a>'
-        print(res)
         return HttpResponse(res)
     elif "error" in result:
         return HttpResponse(result["error"])

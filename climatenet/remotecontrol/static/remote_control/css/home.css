@@ -134,3 +134,8 @@ header {
 .header-container {
     display: flex; /* Располагаем элементы в строку */
 }
+
+.tabs-container {
+    display: flex;
+    justify-content: center;
+}
