@@ -18,7 +18,7 @@ results = {
 
 current_working_directory = os.getcwd()
 
-s3_manager = S3Manager(IAM_SECRET_KEY, IAM_ACCESS_KEY)
+s3_manager = S3Manager(IAM_ACCESS_KEY, IAM_SECRET_KEY)
 
 
 class MqttClient:
