@@ -121,9 +121,9 @@ def submit_command_request(request):
     return get_result(mqtt_request)
 
 
-def submit_command_file_request(request):
-    device_id = request.POST.get('commandFileDeviceId')
-    command = request.POST.get('commandFileCommand')
+def submit_result_as_file_request(request):
+    device_id = request.POST.get('resultAsFileDeviceId')
+    command = request.POST.get('resultAsFileCommand')
 
     if not all([device_id, command]):
         return HttpResponse("ERROR: Missing required parameters")

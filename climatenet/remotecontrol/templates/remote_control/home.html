@@ -22,7 +22,7 @@
         <div class="container">
             <div class="tabs-container">
                 <button id="commandButton" style="background-color: #1e3744" onclick="openForm('command')">Command Output</button>
-                <button id="commandFileButton" onclick="openForm('commandFile')">Command Output File</button>
+                <button id="resultAsFileButton" onclick="openForm('resultAsFile')">Result as File</button>
                 <button id="fileButton" onclick="openForm('file')">File Request</button>
                 <button id="fileTransferButton" onclick="openForm('fileTransfer')">File Transfer</button>
             </div>
@@ -43,21 +43,21 @@
                 </form>
                 <pre id="commandResult" style="display: block;" class="result-container"></pre>
             </div>
-            <div id="commandFileForm" class="form-container">
-                <h2>Command Output File Request</h2>
-                <form onsubmit="submitForm(event, 'commandFileResult')" action="{% url 'submit_command_file_request' %}" method="POST">
+            <div id="resultAsFileForm" class="form-container">
+                <h2>Result as File Request</h2>
+                <form onsubmit="submitForm(event, 'resultAsFileResult')" action="{% url 'submit_result_as_file_request' %}" method="POST">
                     {% csrf_token %}
-                    <label for="commandFileDeviceId">DeviceID:</label>
-                    <select id="commandFileDeviceId" name="commandFileDeviceId">
+                    <label for="resultAsFileDeviceId">DeviceID:</label>
+                    <select id="resultAsFileDeviceId" name="resultAsFileDeviceId">
                         {% for device in device_list %}
                             <option value="{{ device.generated_id }}">{{device.parent_name}}    |    {{ device.name }}   ({{ device.generated_id }})</option>
                         {% endfor %}
                     </select>
-                    <label for="commandFileCommand">Command:</label>
-                    <textarea id="commandFileCommand" name="commandFileCommand"></textarea>
+                    <label for="resultAsFileCommand">Command:</label>
+                    <textarea id="resultAsFileCommand" name="resultAsFileCommand"></textarea>
                     <button type="submit">Submit</button>
                 </form>
-                <div id="commandFileResult" class="result-container"></div>
+                <div id="resultAsFileResult" class="result-container"></div>
             </div>
             <div id="fileForm" class="form-container">
                 <h2>File Request</h2>
@@ -125,7 +125,7 @@
                 const originalColor = submitButton.style.backgroundColor;
                 submitButton.style.backgroundColor = "#1e3744";
                 submitButton.disabled = true;
-                submitButton.style.cursor = "wait";
+                document.body.style.cursor = "wait";
 
                 const response = await fetch(form.action, {
                     method: 'POST',
@@ -134,7 +134,7 @@
 
                 submitButton.style.backgroundColor = originalColor;
                 submitButton.disabled = false;
-                submitButton.style.cursor = "pointer";
+                document.body.style.cursor = "default";
 
                 if (response.ok) {
                     let result = await response.text();
