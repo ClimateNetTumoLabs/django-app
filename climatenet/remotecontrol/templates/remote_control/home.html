@@ -21,6 +21,22 @@
         </header>
 
         <div class="container">
+            <div class="device-selectors">
+                <div class="provinces-list">
+                    <label for="province">Province:</label>
+                    <select id="province" name="province" onchange="getDevices()">
+                        <option value="">-- Choose Province --</option>
+                        {% for province in province_list %}
+                            <option value="{{ province }}">{{ province }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="devices-list">
+                    <label for="deviceId">Device:</label>
+                    <select id="deviceId" name="deviceId">
+                    </select>
+                </div>
+            </div>
             <div class="tabs-container">
                 <button id="commandButton" style="background-color: #1e3744" onclick="openForm('command')">Command Output</button>
                 <button id="resultAsFileButton" onclick="openForm('resultAsFile')">Result as File</button>
@@ -32,12 +48,6 @@
                 <h2>Command Output Request</h2>
                 <form onsubmit="submitForm(event, 'commandResult')" action="{% url 'submit_command_request' %}" method="POST">
                     {% csrf_token %}
-                    <label for="deviceId">Device:</label>
-                    <select id="deviceId" name="deviceId">
-                        {% for device in device_list %}
-                            <option value="{{ device.generated_id }}">{{device.parent_name}}    |    {{ device.name }}   ({{ device.generated_id }})</option>
-                        {% endfor %}
-                    </select>
                     <label for="command">Command:</label>
                     <textarea id="command" name="command"></textarea>
                     <button type="submit">Submit</button>
@@ -48,12 +58,6 @@
                 <h2>Result as File Request</h2>
                 <form onsubmit="submitForm(event, 'resultAsFileResult')" action="{% url 'submit_result_as_file_request' %}" method="POST">
                     {% csrf_token %}
-                    <label for="resultAsFileDeviceId">DeviceID:</label>
-                    <select id="resultAsFileDeviceId" name="resultAsFileDeviceId">
-                        {% for device in device_list %}
-                            <option value="{{ device.generated_id }}">{{device.parent_name}}    |    {{ device.name }}   ({{ device.generated_id }})</option>
-                        {% endfor %}
-                    </select>
                     <label for="resultAsFileCommand">Command:</label>
                     <textarea id="resultAsFileCommand" name="resultAsFileCommand"></textarea>
                     <button type="submit">Submit</button>
@@ -64,12 +68,6 @@
                 <h2>File Request</h2>
                 <form onsubmit="submitForm(event, 'fileResult')" action="{% url 'submit_file_request' %}" method="POST">
                     {% csrf_token %}
-                    <label for="fileDeviceId">DeviceID:</label>
-                    <select id="fileDeviceId" name="fileDeviceId">
-                        {% for device in device_list %}
-                            <option value="{{ device.generated_id }}">{{device.parent_name}}    |    {{ device.name }}   ({{ device.generated_id }})</option>
-                        {% endfor %}
-                    </select>
                     <label for="filePath">File Path:</label>
                     <input type="text" id="filePath" name="filePath">
                     <button type="submit">Submit</button>
@@ -80,14 +78,9 @@
                 <h2>File Transfer Request</h2>
                 <form onsubmit="submitForm(event, 'fileTransferResult')" action="{% url 'submit_file_transfer' %}" method="POST">
                     {% csrf_token %}
-                    <label for="fileTransferDeviceId">DeviceID:</label>
-                    <select id="fileTransferDeviceId" name="fileTransferDeviceId">
-                        {% for device in device_list %}
-                            <option value="{{ device.generated_id }}">{{device.parent_name}}    |    {{ device.name }}   ({{ device.generated_id }})</option>
-                        {% endfor %}
-                    </select>
-                    <label for="fileTransferS3Key">S3 File Key:</label>
+                    <label for="fileTransferS3Key">S3 File:</label>
                     <select id="fileTransferS3Key" name="fileTransferS3Key">
+                        <option value="">-- Choose S3 File --</option>
                         {% for file in s3_files %}
                             <option value="{{ file }}">{{ file }}</option>
                         {% endfor %}
@@ -99,5 +92,34 @@
                 <pre id="fileTransferResult" class="result-container"></pre>
             </div>
         </div>
+    <script>
+        function getDevices() {
+            var province = document.getElementById('province').value;
+            var deviceSelect = document.getElementById('deviceId');
+            // Clear existing options
+            deviceSelect.innerHTML = '';
+
+            // Make a request to get devices based on selected province
+            // Replace 'url_to_get_devices' with the actual URL to fetch devices for a province
+            fetch("{% url 'get_devices' %}?province=" + province)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length != 0) {
+                        var option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = '-- Choose Device --';
+                        deviceSelect.appendChild(option);
+                    }
+
+                    data.forEach(device => {
+                        var option = document.createElement('option');
+                        option.value = device.generated_id;
+                        option.textContent = device.name + ' (' + device.generated_id + ')';
+                        deviceSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching devices:', error));
+        }
+    </script>
     </body>
 </html>

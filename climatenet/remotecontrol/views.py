@@ -7,11 +7,10 @@ import secrets
 from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY, MQTT_BROKER_ENDPOINT
 from .s3 import S3Manager, BUCKET_TO_RASPBERRY, BUCKET_FROM_RASPBERRY
 from django.views.decorators.cache import never_cache
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from backend.models import DeviceDetail
 from django.contrib.auth import logout
-from django.http import HttpResponse
-
 
 results = {
 
@@ -54,8 +53,12 @@ def logout_user(request):
 def home(request):
     s3_files = s3_manager.list_files(bucket=BUCKET_TO_RASPBERRY)
     device_list = DeviceDetail.objects.all().order_by('parent_name', 'name')
+    parent_list = set()
+    for device in device_list:
+        parent_list.add(device.parent_name)
+
     context = {
-        'device_list': device_list,
+        'province_list': list(parent_list),
         's3_files': s3_files
     }
     return render(request, 'remote_control/home.html', context)
@@ -123,7 +126,7 @@ def submit_command_request(request):
 
 
 def submit_result_as_file_request(request):
-    device_id = request.POST.get('resultAsFileDeviceId')
+    device_id = request.POST.get('deviceId')
     command = request.POST.get('resultAsFileCommand')
 
     if not all([device_id, command]):
@@ -139,7 +142,7 @@ def submit_result_as_file_request(request):
 
 
 def submit_file_request(request):
-    device_id = request.POST.get('fileDeviceId')
+    device_id = request.POST.get('deviceId')
     file_path = request.POST.get('filePath')
 
     if not all([device_id, file_path]):
@@ -155,7 +158,7 @@ def submit_file_request(request):
 
 
 def submit_file_transfer(request):
-    device_id = request.POST.get('fileTransferDeviceId')
+    device_id = request.POST.get('deviceId')
     file_key = request.POST.get('fileTransferS3Key')
     destination_path = request.POST.get('fileTransferDestination')
 
@@ -170,3 +173,17 @@ def submit_file_transfer(request):
     }
 
     return get_result(mqtt_request)
+
+
+def get_devices(request):
+    if request.method == 'GET':
+        province = request.GET.get('province', None)
+        if province is not None:
+            devices = DeviceDetail.objects.filter(parent_name=province)
+            device_list = [{'generated_id': device.generated_id,
+                            'name': device.name} for device in devices]
+            return JsonResponse(device_list, safe=False)
+        else:
+            return JsonResponse([], safe=False)
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)

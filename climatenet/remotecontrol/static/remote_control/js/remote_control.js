@@ -17,7 +17,10 @@ async function submitForm(event, resultId) {
     const form = event.target;
     const formData = new FormData(form);
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
+    const deviceId = document.getElementById('deviceId').value;
+    formData.append('deviceId', deviceId);
     formData.append('csrfmiddlewaretoken', csrfToken);
+
     document.getElementById(resultId).innerText = "";
 
     const submitButton = form.querySelector("button[type=submit]");

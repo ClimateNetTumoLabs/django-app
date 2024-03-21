@@ -138,9 +138,26 @@ header {
 
 .tabs-container {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
+}
+
+.tabs-container button {
+    margin: 5px 10px 5px 0px;
 }
 
 pre {
     white-space: pre-wrap;
+}
+
+.device-selectors {
+    display: flex;
+    justify-content: flex-start;
+    color: #D8D8DA;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.devices-list {
+    margin-left: 60px;
+    min-width: 158px;
 }
