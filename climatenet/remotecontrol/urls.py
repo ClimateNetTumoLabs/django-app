@@ -10,6 +10,5 @@ urlpatterns = [
     path('submit_result_as_file_request/', custom_login_required(views.submit_result_as_file_request), name='submit_result_as_file_request'),
     path('submit_file_request/', custom_login_required(views.submit_file_request), name='submit_file_request'),
     path('submit_file_transfer/', custom_login_required(views.submit_file_transfer), name='submit_file_transfer'),
-    path('logout/', views.logout_user, name='remote-control-logout'),
     path('get_devices/', custom_login_required(views.get_devices), name='get_devices'),
 ]

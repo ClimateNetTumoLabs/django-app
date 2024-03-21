@@ -1,16 +1,16 @@
-import paho.mqtt.client as mqtt
 import os
 import ssl
 import json
 import time
 import secrets
+import paho.mqtt.client as mqtt
 from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY, MQTT_BROKER_ENDPOINT
 from .s3 import S3Manager, BUCKET_TO_RASPBERRY, BUCKET_FROM_RASPBERRY
 from django.views.decorators.cache import never_cache
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
 from backend.models import DeviceDetail
-from django.contrib.auth import logout
+from django.shortcuts import render
+
 
 results = {
 
@@ -44,18 +44,11 @@ class MqttClient:
         self.client.loop_start()
 
 
-def logout_user(request):
-    logout(request)
-    return redirect('/admin/login/?next=/remote-control/')
-
-
 @never_cache
 def home(request):
-    s3_files = s3_manager.list_files(bucket=BUCKET_TO_RASPBERRY)
-    device_list = DeviceDetail.objects.all().order_by('parent_name', 'name')
-    parent_list = set()
-    for device in device_list:
-        parent_list.add(device.parent_name)
+    s3_files = s3_manager.files_list(bucket=BUCKET_TO_RASPBERRY)
+
+    parent_list = set(DeviceDetail.objects.values_list('parent_name', flat=True).order_by('parent_name'))
 
     context = {
         'province_list': list(parent_list),
@@ -179,7 +172,7 @@ def get_devices(request):
     if request.method == 'GET':
         province = request.GET.get('province', None)
         if province is not None:
-            devices = DeviceDetail.objects.filter(parent_name=province)
+            devices = DeviceDetail.objects.filter(parent_name=province).order_by('name')
             device_list = [{'generated_id': device.generated_id,
                             'name': device.name} for device in devices]
             return JsonResponse(device_list, safe=False)
