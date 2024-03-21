@@ -1,16 +1,17 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib.auth import logout
-from django.views.decorators.cache import never_cache
-from backend.models import DeviceDetail
-from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY, MQTT_BROKER_ENDPOINT
-from .s3 import S3Manager, BUCKET_TO_RASPBERRY, BUCKET_FROM_RASPBERRY
 import paho.mqtt.client as mqtt
 import os
 import ssl
 import json
 import time
 import secrets
+from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY, MQTT_BROKER_ENDPOINT
+from .s3 import S3Manager, BUCKET_TO_RASPBERRY, BUCKET_FROM_RASPBERRY
+from django.views.decorators.cache import never_cache
+from django.shortcuts import render, redirect
+from backend.models import DeviceDetail
+from django.contrib.auth import logout
+from django.http import HttpResponse
+
 
 results = {
 
