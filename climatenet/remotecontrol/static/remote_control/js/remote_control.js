@@ -18,8 +18,12 @@ async function submitForm(event, resultId) {
     const formData = new FormData(form);
     const csrfToken = document.querySelector('input[name=csrfmiddlewaretoken]').value;
     const deviceId = document.getElementById('deviceId').value;
+    const respondingTimeout = document.getElementById('respondingTimeout').value;
+    const resultTimeout = document.getElementById('resultTimeout').value;
     formData.append('deviceId', deviceId);
     formData.append('csrfmiddlewaretoken', csrfToken);
+    formData.append('respondingTimeout', respondingTimeout)
+    formData.append('resultTimeout', resultTimeout)
 
     document.getElementById(resultId).innerText = "";
 

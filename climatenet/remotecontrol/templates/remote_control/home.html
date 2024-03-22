@@ -22,7 +22,7 @@
 
         <div class="container">
             <div class="device-selectors">
-                <div class="provinces-list">
+                <div>
                     <label for="province">Province:</label>
                     <select id="province" name="province" onchange="getDevices()">
                         <option value="">-- Choose Province --</option>
@@ -31,10 +31,18 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="devices-list">
+                <div>
                     <label for="deviceId">Device:</label>
                     <select id="deviceId" name="deviceId">
                     </select>
+                </div>
+                <div>
+                    <label for="respondingTimeout">Responding Timeout</label>
+                    <input type="number" id="respondingTimeout" name="respondingTimeout" value="5">
+                </div>
+                <div>
+                    <label for="resultTimeout">Result Timeout</label>
+                    <input type="number" id="resultTimeout" name="resultTimeout" value="60">
                 </div>
             </div>
             <div class="tabs-container">

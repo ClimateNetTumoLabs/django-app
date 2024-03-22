@@ -46,6 +46,7 @@ label {
 }
 
 input[type="text"],
+input[type="number"],
 textarea,
 select {
     width: 100%;
@@ -142,7 +143,7 @@ header {
 }
 
 .tabs-container button {
-    margin: 5px 10px 5px 0px;
+    margin: 5px;
 }
 
 pre {
@@ -157,7 +158,7 @@ pre {
     margin-bottom: 20px;
 }
 
-.devices-list {
-    margin-left: 60px;
+.device-selectors div {
+    margin: 5px;
     min-width: 158px;
 }
