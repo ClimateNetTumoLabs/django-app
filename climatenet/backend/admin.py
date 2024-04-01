@@ -4,7 +4,7 @@ from backend.models import Device, About, DeviceDetail, Footer, ContactUs
 
 # Customize the admin site title and header
 admin.site.site_title = "ClimateNet Admin"
-admin.site.site_header = "CliamteNet Admin"
+admin.site.site_header = "ClimateNet Admin"
 
 
 admin.site.register(Device)
