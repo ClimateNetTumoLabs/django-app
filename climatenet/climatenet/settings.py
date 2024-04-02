@@ -10,7 +10,7 @@ DEBUG = False
 
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
-ALLOWED_HOSTS = ['climatenet.am', '127.0.0.1']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1']
 
 DATABASES = {
     'default': {
