@@ -4,10 +4,10 @@ from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
 import pandas as pd
 from datetime import datetime, timedelta
-from .db_connection import establish_postgresql_connection
 from .fetch_data import fetch_data_with_time_range, fetch_last_records, preprocess_device_data, \
     preprocess_device_data_new
 from .count_means import compute_group_means, compute_mean_for_time_range
+
 from django.db import connections
 
 
