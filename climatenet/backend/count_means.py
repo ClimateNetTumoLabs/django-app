@@ -2,7 +2,6 @@ from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 import pandas as pd
 from datetime import datetime, timedelta
-from .logger import logger
 from collections import Counter
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
