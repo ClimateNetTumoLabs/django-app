@@ -37,7 +37,6 @@ class DeviceDetailView(generics.ListAPIView):
 
             table_name = f'device{str(device_id)}'
             rows = fetch_last_records(cursor, table_name)
-            print(rows)
             if int(device_id) == 8:
                 device_data = preprocess_device_data(rows)
             else:
@@ -54,7 +53,7 @@ class DeviceDetailView(generics.ListAPIView):
                 return Response(group_means, status=status.HTTP_200_OK)
 
         try:
-            cursor = establish_postgresql_connection().cursor()
+            cursor = connections['aws'].cursor()
             if not cursor:
                 return Response({'error': 'Failed to establish a connection'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
