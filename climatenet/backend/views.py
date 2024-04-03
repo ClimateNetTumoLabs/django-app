@@ -8,6 +8,8 @@ from .db_connection import establish_postgresql_connection
 from .fetch_data import fetch_data_with_time_range, fetch_last_records, preprocess_device_data, \
     preprocess_device_data_new
 from .count_means import compute_group_means, compute_mean_for_time_range
+from django.db import connections
+
 
 
 class DeviceDetailView(generics.ListAPIView):
@@ -27,13 +29,15 @@ class DeviceDetailView(generics.ListAPIView):
         end_time_str = self.request.GET.get('end_time_str')
         if start_time_str == end_time_str:
             # Case where start_time_str equals end_time_str
-            cursor = establish_postgresql_connection().cursor()
+            cursor = connections['aws'].cursor()
+            # Example: Execute a query
             if not cursor:
                 return Response({'error': 'Failed to establish a connection'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             table_name = f'device{str(device_id)}'
             rows = fetch_last_records(cursor, table_name)
+            print(rows)
             if int(device_id) == 8:
                 device_data = preprocess_device_data(rows)
             else:
