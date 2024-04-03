@@ -4,13 +4,11 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-print(f'BASE_DIR {BASE_DIR}')
-
-DEBUG = False
+DEBUG = True
 
 SECRET_KEY = 'django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6'
 
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost"]
 
 DATABASES = {
     'default': {
@@ -60,7 +58,6 @@ TEMPLATES = [
     },
 ]
 
-print(f'Taplates {TEMPLATES[0]["DIRS"]}')
 
 WSGI_APPLICATION = 'climatenet.wsgi.application'
 
@@ -70,8 +67,6 @@ STATIC_ROOT = os.path.join(BASE_DIR,  'static')
 STATICFILES_DIRS = [
     BASE_DIR.parent.parent / "frontend/build/static"
 ]
-
-print(f'Static root  {STATIC_ROOT}')
 
 CORS_ORIGIN_WHITELIST = [
     "https://localhost:3000",
@@ -108,44 +103,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ADMIN_SITE_TITLE = "ClimateNet Admin"
 ADMIN_SITE_HEADER = "ClimateNet Administration"
-
-# Configure the logger
-logger = logging.getLogger('backend.views')
-logger.setLevel(logging.DEBUG)
-
-# Create a file handler for the log file
-log_file = 'debug.log'
-file_handler = logging.FileHandler(log_file)
-
-# Create a formatter for the log entries
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-# Add the file handler to the logger
-logger.addHandler(file_handler)
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'INFO',
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'backend': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
