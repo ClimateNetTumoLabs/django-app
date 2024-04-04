@@ -9,7 +9,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-
 ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost"]
 
 DATABASES = {
@@ -17,12 +16,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'secondary': {
+    'remote': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
-        'DATABASE_NAME': os.getenv('DATABASE_NAME'),
         'HOST': os.getenv('HOST'),
         'PORT': '5432',
     }
@@ -84,7 +82,7 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://climatenet.am",
-    "https://climatennet.am"
+    "https://climatenet.am"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
