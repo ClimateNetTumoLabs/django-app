@@ -14,7 +14,7 @@ Dependencies:
     - typing.Any: Type representing any type.
     - typing.Dict: Type representing a dictionary.
     - django.http.HttpResponse: Django HTTP response object.
-    - .config.MQTT_BROKER_ENDPOINT: MQTT broker endpoint.
+    - MQTT_BROKER_ENDPOINT: MQTT broker endpoint.
     - .s3.BUCKET_FROM_RASPBERRY: Name of the S3 bucket.
 
 Global Variables:
@@ -31,8 +31,13 @@ import time
 import secrets
 from typing import Any, Dict
 from django.http import HttpResponse
-from .config import MQTT_BROKER_ENDPOINT
 from .s3 import BUCKET_FROM_RASPBERRY
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+MQTT_BROKER_ENDPOINT = os.getenv('MQTT_BROKER_ENDPOINT')
 
 current_working_directory = os.getcwd()
 

@@ -15,8 +15,8 @@ Dependencies:
     - django.http.JsonResponse: Django JSON response object.
     - django.shortcuts.render: Django shortcut for rendering HTML templates.
     - django.views.decorators.cache.never_cache: Decorator to ensure a view is never cached.
-    - .config.IAM_SECRET_KEY: Secret key for AWS IAM authentication.
-    - .config.IAM_ACCESS_KEY: Access key for AWS IAM authentication.
+    - IAM_SECRET_KEY: Secret key for AWS IAM authentication.
+    - IAM_ACCESS_KEY: Access key for AWS IAM authentication.
     - .s3.S3Manager: Manager class for interacting with Amazon S3.
     - .s3.BUCKET_TO_RASPBERRY: Name of the S3 bucket.
     - backend.models.DeviceDetail: Django model representing device details.
@@ -29,13 +29,20 @@ Global Variables:
 """
 
 
+import os
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import never_cache
-from .config import IAM_SECRET_KEY, IAM_ACCESS_KEY
 from .s3 import S3Manager, BUCKET_TO_RASPBERRY
 from backend.models import DeviceDetail
 from .mqtt import MqttClient
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+IAM_SECRET_KEY = os.getenv('IAM_SECRET_KEY')
+IAM_ACCESS_KEY = os.getenv('IAM_ACCESS_KEY')
 
 s3_manager = S3Manager(IAM_ACCESS_KEY, IAM_SECRET_KEY)
 mqtt_manager = MqttClient()
