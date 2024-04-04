@@ -86,6 +86,9 @@ CORS_ORIGIN_WHITELIST = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+CSRF_TRUSTED_ORIGINS = ['https://dev.climatenet.am']
+
+
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
