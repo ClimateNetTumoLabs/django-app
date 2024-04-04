@@ -20,6 +20,7 @@ class DeviceDetailView(generics.ListAPIView):
     """
     def get_queryset(self):
         device_id = self.kwargs.get('device_id')
+        print(device_id)
 
         if device_id is None or not str(device_id).isdigit():
             return Response({'error': 'Invalid device_id'},
@@ -27,7 +28,10 @@ class DeviceDetailView(generics.ListAPIView):
 
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
+        print(start_time_str)
+        print(end_time_str)
         if start_time_str == end_time_str:
+            print("if")
             # Case where start_time_str equals end_time_str
             cursor = connections['aws'].cursor()
             # Example: Execute a query
@@ -37,9 +41,9 @@ class DeviceDetailView(generics.ListAPIView):
 
             table_name = f'device{str(device_id)}'
             rows = fetch_last_records(cursor, table_name)
-            if int(device_id) == 8:
+            try:
                 device_data = preprocess_device_data(rows)
-            else:
+            except:
                 device_data = preprocess_device_data_new(rows)
             df = pd.DataFrame(device_data)
             df['time'] = pd.to_datetime(df['time'])
