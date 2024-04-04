@@ -22,7 +22,6 @@ Global Variables:
 
 """
 
-
 import os
 import paho.mqtt.client as mqtt
 import ssl
@@ -33,7 +32,6 @@ from typing import Any, Dict
 from django.http import HttpResponse
 from .s3 import BUCKET_FROM_RASPBERRY
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -140,7 +138,8 @@ class MqttClient:
                     return True
         return False
 
-    def request_handler(self, request_type: str, device_id: str, respondingTimeout: str, resultTimeout: str, **kwargs: Any) -> HttpResponse:
+    def request_handler(self, request_type: str, device_id: str, respondingTimeout: str, resultTimeout: str,
+                        **kwargs: Any) -> HttpResponse:
         """
         Handles MQTT requests.
 

@@ -8,7 +8,6 @@ Dependencies:
     - django.http.HttpResponse: Django HTTP response object.
 """
 
-
 from django.http import HttpResponse
 
 
@@ -22,6 +21,7 @@ def custom_login_required(view_func):
     Returns:
         function: Decorated view function.
     """
+
     def wrapped_view(request, *args, **kwargs):
         """
         Wrapper function to check if the user is authenticated.
@@ -38,4 +38,5 @@ def custom_login_required(view_func):
             return view_func(request, *args, **kwargs)
         else:
             return HttpResponse(status=401)
+
     return wrapped_view

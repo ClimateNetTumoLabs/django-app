@@ -6,6 +6,3 @@ class DeviceDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceDetail
         fields = '__all__'
-
-
-

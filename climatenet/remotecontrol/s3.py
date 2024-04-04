@@ -15,7 +15,6 @@ Global Variables:
     - BUCKET_FROM_RASPBERRY (str): Name of the S3 bucket for files from Raspberry Pi.
 """
 
-
 import boto3
 from botocore.exceptions import NoCredentialsError
 from typing import List, Optional

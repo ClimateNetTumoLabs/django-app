@@ -28,7 +28,6 @@ Global Variables:
 
 """
 
-
 import os
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
@@ -37,7 +36,6 @@ from .s3 import S3Manager, BUCKET_TO_RASPBERRY
 from backend.models import DeviceDetail
 from .mqtt import MqttClient
 from dotenv import load_dotenv
-
 
 load_dotenv()
 

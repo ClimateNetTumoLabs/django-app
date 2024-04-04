@@ -1,10 +1,6 @@
-from rest_framework import generics, viewsets, status
-from rest_framework.response import Response
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import timedelta
 from collections import Counter
-from django.http import HttpResponse
-from rest_framework.decorators import api_view
 
 
 def compute_group_means(df, mean_interval):
@@ -76,5 +72,3 @@ def compute_mean_for_time_range(df, start_time, end_time, mean_interval):
             mean_data.append(None)
 
     return mean_data
-
-

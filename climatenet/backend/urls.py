@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from .views import (DeviceDetailView,  DeviceDetailViewSet)
+from .views import (DeviceDetailView, DeviceDetailViewSet)
 
 urlpatterns = [
     path('devices/', DeviceDetailViewSet.as_view({'get': 'list'})),

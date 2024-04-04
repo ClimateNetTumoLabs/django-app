@@ -1,6 +1,3 @@
-from rest_framework import generics, viewsets, status
-from datetime import datetime, timedelta
-
 
 def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
     """Fetch data from the database within a time range."""
@@ -10,6 +7,7 @@ def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
     rows = cursor.fetchall()
     return rows
 
+
 def fetch_last_records(cursor, table_name):
     """Fetch the last records from the database."""
     query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
@@ -17,6 +15,7 @@ def fetch_last_records(cursor, table_name):
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows
+
 
 def preprocess_device_data(rows):
     """Process raw device data and return it in a structured format."""
@@ -37,6 +36,7 @@ def preprocess_device_data(rows):
         })
     return device_data
 
+
 def preprocess_device_data_new(rows):
     device_data = []
     for row in rows:
@@ -56,5 +56,3 @@ def preprocess_device_data_new(rows):
             'direction': row[22],
         })
     return device_data
-
-

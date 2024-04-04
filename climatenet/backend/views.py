@@ -7,9 +7,7 @@ from datetime import datetime, timedelta
 from .fetch_data import fetch_data_with_time_range, fetch_last_records, preprocess_device_data, \
     preprocess_device_data_new
 from .count_means import compute_group_means, compute_mean_for_time_range
-
 from django.db import connections
-
 
 
 class DeviceDetailView(generics.ListAPIView):
@@ -18,6 +16,7 @@ class DeviceDetailView(generics.ListAPIView):
     querying by device ID and time range.
 
     """
+
     def get_queryset(self):
         device_id = self.kwargs.get('device_id')
 
@@ -37,7 +36,7 @@ class DeviceDetailView(generics.ListAPIView):
 
             table_name = f'device{str(device_id)}'
             rows = fetch_last_records(cursor, table_name)
-            if(int(device_id) == 8):
+            if int(device_id) == 8:
                 device_data = preprocess_device_data(rows)
             else:
                 device_data = preprocess_device_data_new(rows)
@@ -45,7 +44,6 @@ class DeviceDetailView(generics.ListAPIView):
             df['time'] = pd.to_datetime(df['time'])
 
             num_records = len(df)
-
 
             if num_records < 24:
                 return Response(device_data, status=status.HTTP_200_OK)
