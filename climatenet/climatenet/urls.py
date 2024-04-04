@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import HttpResponseRedirect
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='index.html')),
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
     re_path(r'^admin$', lambda x: HttpResponseRedirect('/admin/')),
     path('admin/', admin.site.urls),
     path('', include('backend.urls')),
