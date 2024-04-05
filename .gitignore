@@ -161,5 +161,4 @@ cython_debug/
 static/
 
 mqtt_certificates/
-
-.DS_Store
+db.sqlite3
