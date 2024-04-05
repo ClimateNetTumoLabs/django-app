@@ -1,57 +1,66 @@
-def fetch_data_with_time_range(cursor, table_name, start_date, end_date):
-    """Fetch data from the database within a time range."""
-    query = f"SELECT * FROM {table_name} WHERE time >= %s " \
-            f"AND time <= %s ORDER BY time ASC"
-    cursor.execute(query, [start_date, end_date])
-    rows = cursor.fetchall()
-    return rows
+from rest_framework import generics, viewsets, status
+from datetime import datetime, timedelta
 
+
+def get_columns_from_db(cursor, table_name):
+    # Query to retrieve column names from the specified table
+    columns_query = f'''
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name = '{table_name}'
+        AND column_name NOT IN ('id', 'direction');  -- Exclude the 'id' and 'direction' columns
+    '''
+    cursor.execute(columns_query)
+    column_rows = cursor.fetchall()
+    columns = [row[0] for row in column_rows if row[0] != 'time']
+    columns_str = ', '.join([f"ROUND(AVG({elem})::numeric, 2)::float AS {elem}" for elem in columns])
+    return columns_str, cursor
+
+def set_keys_for_device_data(rows, cursor):
+    columns = [desc[0] for desc in cursor.description]
+    # Create dictionaries for each row with column names as keys
+    device_output = [
+        {columns[i]: row[i] for i in range(len(columns))}
+        for row in rows
+    ]
+    return device_output, cursor
 
 def fetch_last_records(cursor, table_name):
-    """Fetch the last records from the database."""
-    query = f"SELECT * FROM (SELECT * FROM {table_name} ORDER " \
-            f"BY time DESC LIMIT 96) subquery ORDER BY time ASC;"
+    columns, cursor = get_columns_from_db(cursor, table_name)
+    print
+    query = f'''
+        SELECT 
+            DATE_TRUNC('hour', "time") AS hour,
+            {columns}
+        FROM {table_name}
+        WHERE "time" > (SELECT MAX("time") - INTERVAL '24 hours' FROM {table_name})
+        GROUP BY hour
+        ORDER BY hour;
+    '''
+    print(query)
     cursor.execute(query)
     rows = cursor.fetchall()
-    return rows
+    return rows, cursor
+
+def fetch_custom_time_records(cursor, table_name, start_time, end_time):
+    columns, cursor = get_columns_from_db(cursor, table_name)
+    query = f'''
+        SELECT 
+            DATE_TRUNC('hour', "time") AS hour,
+            {columns}
+        FROM {table_name}
+        WHERE "time" BETWEEN '{start_time}' AND '{end_time}')
+        GROUP BY hour
+        ORDER BY hour;
+    '''
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    return rows, cursor
 
 
-def preprocess_device_data(rows):
-    """Process raw device data and return it in a structured format."""
-    device_data = []
-    for row in rows:
-        device_data.append({
-            'time': row[1],
-            'uv': row[2],
-            'lux': row[3],
-            'temperature': row[4],
-            'pressure': row[5],
-            'humidity': row[6],
-            'pm1': row[7],
-            'pm2_5': row[8],
-            'pm10': row[9],
-            'speed': row[10],
-            'rain': row[11],
-            'direction': row[12],
-        })
-    return device_data
 
 
-# def preprocess_device_data_new(rows):
-#     device_data = []
-#     for row in rows:
-#         device_data.append({
-#             'time': row[1],
-#             'light_uv': row[2],
-#             'light_lux': row[3],
-#             'temperature': row[4],
-#             'pressure': row[5],
-#             'humidity': row[6],
-#             'pm1': row[7],
-#             'pm2_5': row[8],
-#             'pm10': row[9],
-#             'speed': row[10],
-#             'rain': row[11],
-#             'direction': row[12],
-#         })
-#     return device_data
+
+
+
+
