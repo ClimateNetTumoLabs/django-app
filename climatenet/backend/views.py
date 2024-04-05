@@ -2,13 +2,9 @@ from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
-import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records
-from .count_means import compute_group_means, compute_mean_for_time_range
-
 from django.db import connections
-
 
 
 class DeviceDetailView(generics.ListAPIView):
