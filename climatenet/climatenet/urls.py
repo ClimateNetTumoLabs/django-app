@@ -5,6 +5,7 @@ from django.conf.urls.static import static
 from django.views.generic import TemplateView
 from django.views.generic import RedirectView
 from django.shortcuts import HttpResponseRedirect
+
 urlpatterns = [
     path('', TemplateView.as_view(template_name='index.html')),
     re_path(r'^admin$', lambda x: HttpResponseRedirect('/admin/')),
