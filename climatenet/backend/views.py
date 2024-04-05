@@ -10,9 +10,10 @@ from django.db import connections
 
 
 class DeviceDetailView(generics.ListAPIView):
+    queryset = DeviceDetail.objects.all()
+    serializer_class = DeviceDetailSerializer
     def get(self, request, *args, **kwargs):
         return self.handle_request()
-
     """
     Provides a detailed view of device data including
     querying by device ID and time range.
