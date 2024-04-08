@@ -2,10 +2,8 @@ from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
-import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records, get_nearby_device_temperature
-from .count_means import compute_group_means, compute_mean_for_time_range
 
 from django.db import connections
 
@@ -17,7 +15,6 @@ class DeviceDetailView(generics.ListAPIView):
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
         near_device_temp = self.request.GET.get("near_device")
-        print(near_device_temp)
         return self.handle_request(device_id, start_time_str, end_time_str, near_device_temp)
     """
     Provides a detailed view of device data including
@@ -30,11 +27,11 @@ class DeviceDetailView(generics.ListAPIView):
         cursor = connections['aws'].cursor()
         if not cursor:
             return Response({'error': 'Failed to establish a connection'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        elif (start_time_str and end_time_str):
+        elif start_time_str and end_time_str:
             return self.query_with_time_range(device_id, start_time_str, end_time_str, cursor)
-        elif (near_device_temp):
-            print("Near device ")
+        elif near_device_temp:
             return self.near_device(device_id, cursor)
+
     def near_device(self, device_id, cursor):
         try:
             table_name = f'device{str(device_id)}'
