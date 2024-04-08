@@ -1,7 +1,3 @@
-from rest_framework import generics, viewsets, status
-from datetime import datetime, timedelta
-
-
 def get_columns_from_db(cursor, table_name):
     # Query to retrieve column names from the specified table
     columns_query = f'''
@@ -27,7 +23,6 @@ def set_keys_for_device_data(rows, cursor):
 
 def fetch_last_records(cursor, table_name):
     columns, cursor = get_columns_from_db(cursor, table_name)
-    print
     query = f'''
         SELECT 
             DATE_TRUNC('hour', "time") AS hour,
@@ -37,7 +32,6 @@ def fetch_last_records(cursor, table_name):
         GROUP BY hour
         ORDER BY hour;
     '''
-    print(query)
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
@@ -46,12 +40,35 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
     columns, cursor = get_columns_from_db(cursor, table_name)
     query = f'''
         SELECT 
-            DATE_TRUNC('hour', "time") AS hour,
+            TO_CHAR("time", 'YYYY-MM-DD') AS date,
+            CASE 
+                WHEN EXTRACT(HOUR FROM "time") BETWEEN 0 AND 11 THEN 'night'
+                WHEN EXTRACT(HOUR FROM "time") BETWEEN 12 AND 23 THEN 'day'
+            END AS time_interval,
             {columns}
         FROM {table_name}
-        WHERE "time" BETWEEN '{start_time}' AND '{end_time}')
-        GROUP BY hour
-        ORDER BY hour;
+        WHERE "time" BETWEEN 
+            COALESCE(
+                (SELECT MIN("time") FROM {table_name} WHERE "time" >= {start_time}), 
+                {start_time}
+            ) 
+            AND 
+            COALESCE(
+                (SELECT MAX("time") FROM {table_name} WHERE "time" <= {end_time}), 
+                {end_time}
+            )
+        GROUP BY TO_CHAR("time", 'YYYY-MM-DD'), time_interval;
+    '''
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    return rows, cursor
+
+def get_nearby_device_temperature(table_name, cursor):
+    query = f'''
+      SELECT temperature   
+      FROM {table_name}
+      ORDER BY id DESC
+      LIMIT 1;
     '''
     cursor.execute(query)
     rows = cursor.fetchall()
