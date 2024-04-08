@@ -27,7 +27,6 @@ def set_keys_for_device_data(rows, cursor):
 
 def fetch_last_records(cursor, table_name):
     columns, cursor = get_columns_from_db(cursor, table_name)
-    print
     query = f'''
         SELECT 
             DATE_TRUNC('hour', "time") AS hour,
@@ -37,7 +36,6 @@ def fetch_last_records(cursor, table_name):
         GROUP BY hour
         ORDER BY hour;
     '''
-    print(query)
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
@@ -46,12 +44,24 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
     columns, cursor = get_columns_from_db(cursor, table_name)
     query = f'''
         SELECT 
-            DATE_TRUNC('hour', "time") AS hour,
+            TO_CHAR("time", 'YYYY-MM-DD') AS date,
+            CASE 
+                WHEN EXTRACT(HOUR FROM "time") BETWEEN 0 AND 11 THEN 'night'
+                WHEN EXTRACT(HOUR FROM "time") BETWEEN 12 AND 23 THEN 'day'
+            END AS time_interval,
             {columns}
-        FROM {table_name}
-        WHERE "time" BETWEEN '{start_time}' AND '{end_time}')
-        GROUP BY hour
-        ORDER BY hour;
+        FROM device3
+        WHERE "time" BETWEEN 
+            COALESCE(
+                (SELECT MIN("time") FROM device3 WHERE "time" >= '2024-04-03 00:00:00'), 
+                '2024-04-03 00:00:00'
+            ) 
+            AND 
+            COALESCE(
+                (SELECT MAX("time") FROM device3 WHERE "time" <= '2024-04-07 23:59:59'), 
+                '2024-04-07 23:59:59'
+            )
+        GROUP BY TO_CHAR("time", 'YYYY-MM-DD'), time_interval;
     '''
     cursor.execute(query)
     rows = cursor.fetchall()

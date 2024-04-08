@@ -36,14 +36,13 @@ class DeviceDetailView(generics.ListAPIView):
             start_date, end_date = datetime.strptime(start_time_str, '%Y-%m-%d'), datetime.strptime(end_time_str, '%Y-%m-%d')
             # Custom Range or 7 days
             if start_date < end_date:
-                rows = fetch_custom_time_records(cursor, table_name, start_date, end_date)
+                rows, cursor = fetch_custom_time_records(cursor, table_name, start_date, end_date)
                 device_output, cursor = set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
             # Hourly
             elif start_date == end_date:
                 rows, cursor = fetch_last_records(cursor, table_name)
                 device_output, cursor = set_keys_for_device_data(rows, cursor)
-                print(device_output)
                 return Response(device_output, status=status.HTTP_200_OK)
             else:
                 return Response({'error': 'start_time_str should be earlier than end_time_str'}, status=status.HTTP_400_BAD_REQUEST)
