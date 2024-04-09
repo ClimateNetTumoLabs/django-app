@@ -52,13 +52,13 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
         FROM {table_name}
         WHERE "time" BETWEEN 
             COALESCE(
-                (SELECT MIN("time") FROM {table_name} WHERE "time" >= {start_time}), 
-                {start_time}
+                (SELECT MIN("time") FROM {table_name} WHERE "time" >= '{start_time}'), 
+                '{start_time}'
             ) 
             AND 
             COALESCE(
-                (SELECT MAX("time") FROM {table_name} WHERE "time" <= {end_time}), 
-                {end_time}
+                (SELECT MAX("time") FROM {table_name} WHERE "time" <= '{end_time}'), 
+                '{end_time}'
             )
         GROUP BY TO_CHAR("time", 'YYYY-MM-DD'), time_interval;
     '''
