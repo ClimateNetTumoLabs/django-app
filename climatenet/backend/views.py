@@ -32,7 +32,6 @@ class DeviceDetailView(generics.ListAPIView):
         elif near_device_temp:
             return self.near_device(device_id, cursor)
 
-    @staticmethod
     def near_device(self, device_id, cursor):
         try:
             table_name = f'device{str(device_id)}'
@@ -41,7 +40,6 @@ class DeviceDetailView(generics.ListAPIView):
         except:
             return Response({'Error': 'Can`t take Nearby device Data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @staticmethod
     def query_with_time_range(self, device_id, start_time_str, end_time_str, cursor):
         try:
             table_name = f'device{str(device_id)}'
@@ -50,7 +48,6 @@ class DeviceDetailView(generics.ListAPIView):
             # Custom Range or 7 days
             if start_date < end_date:
                 rows, cursor = fetch_custom_time_records(cursor, table_name, start_date, end_date)
-                print(rows)
                 device_output, cursor = set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
             # Hourly
