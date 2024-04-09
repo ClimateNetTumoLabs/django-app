@@ -1,12 +1,14 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = False
-SECRET_KEY = os.getenv('SECRET_KEY')
+
+DEBUG = True
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost", "https://dev.climatenet.am"]
 APPEND_SLASH = True
 
