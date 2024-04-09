@@ -162,4 +162,4 @@ static/
 
 mqtt_certificates/
 db.sqlite3
-.DS_Store
+migrations/
