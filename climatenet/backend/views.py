@@ -4,9 +4,7 @@ from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
 from datetime import datetime
 from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records, get_nearby_device_temperature
-
 from django.db import connections
-
 
 
 class DeviceDetailView(generics.ListAPIView):
@@ -39,8 +37,6 @@ class DeviceDetailView(generics.ListAPIView):
             return Response(rows, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'Error': 'Can`t take Nearby device Data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
 
     def query_with_time_range(self, device_id, start_time_str, end_time_str, cursor):
         try:
