@@ -32,14 +32,16 @@ class DeviceDetailView(generics.ListAPIView):
         elif near_device_temp:
             return self.near_device(device_id, cursor)
 
+    @staticmethod
     def near_device(self, device_id, cursor):
         try:
             table_name = f'device{str(device_id)}'
             rows, cursor = get_nearby_device_temperature(table_name, cursor)
             return Response(rows, status=status.HTTP_200_OK)
-        except Exception as e:
+        except:
             return Response({'Error': 'Can`t take Nearby device Data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @staticmethod
     def query_with_time_range(self, device_id, start_time_str, end_time_str, cursor):
         try:
             table_name = f'device{str(device_id)}'
