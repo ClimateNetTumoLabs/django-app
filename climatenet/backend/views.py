@@ -3,10 +3,9 @@ from rest_framework.response import Response
 from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
 from datetime import datetime
-from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records, get_nearby_device_temperature
-
+from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records, \
+    get_nearby_device_temperature
 from django.db import connections
-
 
 
 class DeviceDetailView(generics.ListAPIView):
@@ -16,6 +15,7 @@ class DeviceDetailView(generics.ListAPIView):
         end_time_str = self.request.GET.get('end_time_str')
         near_device_temp = self.request.GET.get("near_device")
         return self.handle_request(device_id, start_time_str, end_time_str, near_device_temp)
+
     """
     Provides a detailed view of device data including
     querying by device ID and time range.
@@ -40,15 +40,15 @@ class DeviceDetailView(generics.ListAPIView):
         except Exception as e:
             return Response({'Error': 'Can`t take Nearby device Data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-
     def query_with_time_range(self, device_id, start_time_str, end_time_str, cursor):
         try:
             table_name = f'device{str(device_id)}'
-            start_date, end_date = datetime.strptime(start_time_str, '%Y-%m-%d'), datetime.strptime(end_time_str, '%Y-%m-%d')
+            start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
+            end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
             # Custom Range or 7 days
             if start_date < end_date:
                 rows, cursor = fetch_custom_time_records(cursor, table_name, start_date, end_date)
+                print(rows)
                 device_output, cursor = set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
             # Hourly
@@ -57,9 +57,11 @@ class DeviceDetailView(generics.ListAPIView):
                 device_output, cursor = set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
             else:
-                return Response({'Error': 'Start_time_str should be earlier than end_time_str'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'Error': 'Start_time_str should be earlier than end_time_str'},
+                                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'Error': 'An error occurred while fetching the data.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'Error': 'An error occurred while fetching the data.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def list(self, request, *args, **kwargs):
         try:

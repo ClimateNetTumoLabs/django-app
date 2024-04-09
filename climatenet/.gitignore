@@ -17,3 +17,5 @@ backend/migrations/__pycache_/
 
 /Test
 */Test
+
+migrations/
