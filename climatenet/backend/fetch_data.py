@@ -12,6 +12,7 @@ def get_columns_from_db(cursor, table_name):
     columns_str = ', '.join([f"ROUND(AVG({elem})::numeric, 2)::float AS {elem}" for elem in columns])
     return columns_str, cursor
 
+
 def set_keys_for_device_data(rows, cursor):
     columns = [desc[0] for desc in cursor.description]
     # Create dictionaries for each row with column names as keys
@@ -20,6 +21,7 @@ def set_keys_for_device_data(rows, cursor):
         for row in rows
     ]
     return device_output, cursor
+
 
 def fetch_last_records(cursor, table_name):
     columns, cursor = get_columns_from_db(cursor, table_name)
@@ -36,6 +38,7 @@ def fetch_last_records(cursor, table_name):
     rows = cursor.fetchall()
     return rows, cursor
 
+
 def fetch_custom_time_records(cursor, table_name, start_time, end_time):
     columns, cursor = get_columns_from_db(cursor, table_name)
     query = f'''
@@ -49,19 +52,20 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
         FROM {table_name}
         WHERE "time" BETWEEN 
             COALESCE(
-                (SELECT MIN("time") FROM {table_name} WHERE "time" >= {start_time}), 
-                {start_time}
+                (SELECT MIN("time") FROM {table_name} WHERE "time" >= '{start_time}'), 
+                '{start_time}'
             ) 
             AND 
             COALESCE(
-                (SELECT MAX("time") FROM {table_name} WHERE "time" <= {end_time}), 
-                {end_time}
+                (SELECT MAX("time") FROM {table_name} WHERE "time" <= '{end_time}'), 
+                '{end_time}'
             )
         GROUP BY TO_CHAR("time", 'YYYY-MM-DD'), time_interval;
     '''
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
+
 
 def get_nearby_device_temperature(table_name, cursor):
     query = f'''
@@ -73,11 +77,3 @@ def get_nearby_device_temperature(table_name, cursor):
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
-
-
-
-
-
-
-
-
