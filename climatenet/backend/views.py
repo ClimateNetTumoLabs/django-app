@@ -9,7 +9,8 @@ from django.db import connections
 
 
 class DeviceDetailView(generics.ListAPIView):
-    def get(self, request, *args, **kwargs):
+
+    def get_queryset(self, *args, **kwargs):
         device_id = self.kwargs.get('device_id')
         start_time_str = self.request.GET.get('start_time_str')
         end_time_str = self.request.GET.get('end_time_str')
