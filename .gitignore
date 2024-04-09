@@ -163,3 +163,4 @@ static/
 mqtt_certificates/
 db.sqlite3
 migrations/
+.DS_Store
