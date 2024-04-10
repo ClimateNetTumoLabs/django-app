@@ -1,10 +1,12 @@
+from rest_framework.decorators import api_view
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
+from django.http import JsonResponse
 from .serializers import DeviceDetailSerializer
 from .models import DeviceDetail
 from datetime import datetime
 from .fetch_data import fetch_last_records, set_keys_for_device_data, fetch_custom_time_records, \
-    get_nearby_device_temperature
+    get_last_data
 from django.db import connections
 
 
@@ -17,10 +19,10 @@ class DeviceDetailView(generics.ListAPIView):
         near_device_temp = self.request.GET.get("near_device")
         return self.handle_request(device_id, start_time_str, end_time_str, near_device_temp)
 
-    """
-    Provides a detailed view of device data including
-    querying by device ID and time range.
-    """
+"""
+Provides a detailed view of device data including
+querying by device ID and time range.
+"""
 
     def handle_request(self, device_id, start_time_str, end_time_str, near_device_temp):
         if not (device_id and str(device_id).isdigit()):

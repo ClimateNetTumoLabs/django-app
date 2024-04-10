@@ -67,9 +67,9 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
     return rows, cursor
 
 
-def get_nearby_device_temperature(table_name, cursor):
+def get_last_data(table_name, cursor):
     query = f'''
-      SELECT temperature   
+      SELECT * 
       FROM {table_name}
       ORDER BY id DESC
       LIMIT 1;
@@ -77,3 +77,5 @@ def get_nearby_device_temperature(table_name, cursor):
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
+
+
