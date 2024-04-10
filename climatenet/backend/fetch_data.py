@@ -23,7 +23,7 @@ def set_keys_for_device_data(rows, cursor):
     return device_output, cursor
 
 
-def fetch_last_records(cursor, table_name):
+def fetch_24_hours(cursor, table_name):
     columns, cursor = get_columns_from_db(cursor, table_name)
     query = f'''
         SELECT 
@@ -67,7 +67,7 @@ def fetch_custom_time_records(cursor, table_name, start_time, end_time):
     return rows, cursor
 
 
-def get_last_data(table_name, cursor):
+def fetch_last_data(table_name, cursor):
     query = f'''
       SELECT * 
       FROM {table_name}
@@ -77,5 +77,3 @@ def get_last_data(table_name, cursor):
     cursor.execute(query)
     rows = cursor.fetchall()
     return rows, cursor
-
-

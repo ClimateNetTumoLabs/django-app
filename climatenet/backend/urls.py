@@ -1,6 +1,5 @@
 from django.urls import path, re_path
-from .views import  (DeviceDetailViewSet, latest_device_data, period_device_data, nearby_device_data,
-                     hourly_device_data)
+from .views import (DeviceDetailViewSet, NearDeviceView, PeriodDataView, LatestDataView, HourlyDataView)
 # urlpatterns = [
 #     path('list/', DeviceDetailViewSet.as_view({'get': 'list'})),
 #     # path('<str:device_id>/latest/', query_with_time_range, name='latest-device-data'),
@@ -9,8 +8,8 @@ from .views import  (DeviceDetailViewSet, latest_device_data, period_device_data
 
 urlpatterns = [
     path('list/', DeviceDetailViewSet.as_view({'get': 'list'})),
-    path('<str:device_id>/latest/', latest_device_data, name='latest-device-data'),
-    path('<str:device_id>/period/', period_device_data, name='period-device-data'),
-    path('<str:device_id>/nearby/', nearby_device_data, name='nearby-device-data'),
-    path('<str:device_id>/24hours/', hourly_device_data, name='hourly-device-data')
+    path('<str:device_id>/latest/', LatestDataView.as_view(), name='latest-device-data'),
+    path('<str:device_id>/period/', PeriodDataView.as_view(), name='period-device-data'),
+    path('<str:device_id>/nearby/', NearDeviceView.as_view(), name='nearby-device-data'),
+    path('<str:device_id>/24hours/', HourlyDataView.as_view(), name='hourly-device-data')
     ]
