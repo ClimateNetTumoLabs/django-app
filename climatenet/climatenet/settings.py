@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DEBUG = False
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost"]
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost", "https://dev.climatenet.am"]
 APPEND_SLASH = True
 
 DATABASES = {
@@ -87,10 +87,11 @@ CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://climatenet.am",
-    "https://climatennet.am"
+    "https://dev.climatenet.am"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
+
 
 CORS_ALLOW_HEADERS = [
     'accept',
