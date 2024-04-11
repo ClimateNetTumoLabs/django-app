@@ -11,7 +11,7 @@
     <body>
         <header>
             <div class="header-container">
-                <a href="{% url 'home' %}">View site</a>
+                <a href="{% url 'index' %}">View site</a>
                 <a href="{% url 'admin:index' %}">Admin</a>
                 <form action="{% url 'admin:logout' %}?next=/remote-control/" method="post">
                     {% csrf_token %}

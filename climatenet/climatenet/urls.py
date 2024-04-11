@@ -10,6 +10,7 @@ urlpatterns = [
     path('device_cl/<str:device_id>/', TemplateView.as_view(template_name='index.html'), name='device_detail'),
     path('about/', TemplateView.as_view(template_name='index.html'), name='about'),
     path('', include('backend.urls')),
+    path('remote-control/', include('remotecontrol.urls'))
 ]
 
 if settings.DEBUG:
