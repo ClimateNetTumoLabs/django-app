@@ -13,6 +13,10 @@ querying by device ID and time range.
 
 
 class FetchingDeviceDataView:
+    """
+        A class for fetching and processing device data from a database.
+
+        """
     def get_columns_from_db(self, cursor, table_name):
         # Query to retrieve column names from the specified table
         columns_query = f'''
@@ -102,6 +106,10 @@ class FetchingDeviceDataView:
 
 
 class DataView(APIView):
+    """
+    A view to handle cursor connection and device_id name.
+    Inherits from APIView class.
+    """
     def handle(self):
         try:
             device_id = self.kwargs.get('device_id')
@@ -118,6 +126,10 @@ class DataView(APIView):
 
 
 class NearDeviceView(DataView, FetchingDeviceDataView):
+    """
+    A view for fetching data from a nearby device.
+    Inherits from DataView and FetchingDeviceDataView classes.
+    """
     def get(self, request, device_id):
         cursor, table_name = self.handle()
         try:
@@ -130,13 +142,13 @@ class NearDeviceView(DataView, FetchingDeviceDataView):
 
 
 class PeriodDataView(DataView, FetchingDeviceDataView):
+    """
+    A view for fetching periodic(7days, month, range) data from the device.
+    Inherits from DataView and FetchingDeviceDataView classes.
+    """
     def get(self, request, device_id, *args, **kwargs):
         try:
             cursor, table_name = self.handle()
-            # start_time_str = self.request.GET.get('start_time_str')
-            # end_time_str = self.request.GET.get('end_time_str')
-            # start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
-            # end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
             start_date, end_date = map(lambda x: datetime.strptime(self.request.GET.get(x), '%Y-%m-%d'),
                                        ['start_time_str', 'end_time_str'])
             # Custom Range or 7 days
@@ -152,6 +164,10 @@ class PeriodDataView(DataView, FetchingDeviceDataView):
 
 
 class LatestDataView(DataView, FetchingDeviceDataView):
+    """
+    A view for fetching latest data from the device.
+    Inherits from DataView and FetchingDeviceDataView classes.
+    """
     def get(self, request, device_id):
         try:
             cursor, table_name = self.handle()
@@ -164,6 +180,10 @@ class LatestDataView(DataView, FetchingDeviceDataView):
 
 
 class HourlyDataView(DataView, FetchingDeviceDataView):
+    """
+    A view for fetching 24hours data from the device.
+    Inherits from DataView and FetchingDeviceDataView classes.
+    """
     def get(self, request, device_id):
         try:
             cursor, table_name = self.handle()
