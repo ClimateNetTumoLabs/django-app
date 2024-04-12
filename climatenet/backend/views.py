@@ -12,7 +12,7 @@ querying by device ID and time range.
 """
 
 
-class FetchingDeviceDataView(APIView):
+class FetchingDeviceDataView:
     def get_columns_from_db(self, cursor, table_name):
         # Query to retrieve column names from the specified table
         columns_query = f'''
