@@ -133,10 +133,12 @@ class PeriodDataView(DataView, FetchingDeviceDataView):
     def get(self, request, device_id, *args, **kwargs):
         try:
             cursor, table_name = self.handle()
-            start_time_str = self.request.GET.get('start_time_str')
-            end_time_str = self.request.GET.get('end_time_str')
-            start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
-            end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
+            # start_time_str = self.request.GET.get('start_time_str')
+            # end_time_str = self.request.GET.get('end_time_str')
+            # start_date = datetime.strptime(start_time_str, '%Y-%m-%d')
+            # end_date = datetime.strptime(end_time_str, '%Y-%m-%d')
+            start_date, end_date = map(lambda x: datetime.strptime(self.request.GET.get(x), '%Y-%m-%d'),
+                                       ['start_time_str', 'end_time_str'])
             # Custom Range or 7 days
             if start_date < end_date:
                 rows = self.fetch_custom_time_records(cursor, table_name, start_date, end_date)
