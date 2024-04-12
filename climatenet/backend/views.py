@@ -89,6 +89,18 @@ class FetchingDeviceDataView(APIView):
         rows = cursor.fetchall()
         return rows
 
+    def fetch_nearby_data(self, table_name, cursor):
+        query = f'''
+                  SELECT temperature
+                  FROM {table_name}
+                  ORDER BY id DESC
+                  LIMIT 1;
+                '''
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return rows
+
+
 class DataView(APIView):
     def handle(self):
         try:
@@ -109,24 +121,10 @@ class NearDeviceView(DataView, FetchingDeviceDataView):
     def get(self, request, device_id):
         cursor, table_name = self.handle()
         try:
-            rows = self.fetch_last_data(table_name, cursor)
+            rows = self.fetch_nearby_data(table_name, cursor)
             if rows:
-                row_data = self.set_keys_for_device_data(rows, cursor)[0]  # Assuming only one row is returned
-                temperature_query = f'''
-                        SELECT temperature
-                        FROM {table_name}
-                        WHERE id = {row_data['id']}
-                    '''
-                cursor.execute(temperature_query)
-                temperature_result = cursor.fetchone()
-                if temperature_result:
-                    temperature = temperature_result[0]
-                    return Response([temperature], status=status.HTTP_200_OK)
-                else:
-                    return Response({'Error': 'Temperature not found for the given ID'},
-                                    status=status.HTTP_404_NOT_FOUND)
+                return Response(rows, status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response({'Error': 'An error occurred while fetching temperature'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
