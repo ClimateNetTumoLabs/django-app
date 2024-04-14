@@ -65,8 +65,6 @@ class HourlyDataView(BaseDataView):
             rows = self.execute_query(HOURLY_DATA_QUERY.format(table_name=table_name, columns=columns))
             device_output = self.set_keys_for_device_data(rows)
             return Response(device_output, status=status.HTTP_200_OK)
-        except ValueError as e:
-            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'Error': 'An error occurred while fetching the hourly data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -81,8 +79,6 @@ class NearDeviceView(BaseDataView):
             rows = self.execute_query(NEARBY_DATA_QUERY.format(table_name=table_name))
             if rows:
                 return Response(rows, status=status.HTTP_200_OK)
-        except ValueError as e:
-            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'Error': 'An error occurred while fetching data from a nearby device'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -98,8 +94,6 @@ class LatestDataView(BaseDataView):
             rows = self.execute_query(LATEST_DATA_QUERY.format(table_name=table_name))
             device_output = self.set_keys_for_device_data(rows)
             return Response(device_output, status=status.HTTP_200_OK)
-        except ValueError as e:
-            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'Error': 'An error occurred while fetching the latest data'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -110,18 +104,19 @@ class PeriodDataView(BaseDataView):
     A view for fetching periodic (7days, month, range) data from a device.
     """
     def get(self, request, *args, **kwargs):
+        table_name = self.handle()
         try:
-            table_name = self.handle()
             start_date = datetime.strptime(self.request.GET.get('start_time_str'), '%Y-%m-%d')
             end_date = datetime.strptime(self.request.GET.get('end_time_str'), '%Y-%m-%d')
-            if start_date >= end_date:
-                return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError:
+            return Response({'Error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+        if start_date >= end_date:
+            return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
             columns = self.get_columns_from_db(table_name)
             rows = self.execute_query(CUSTOM_TIME_QUERY.format(table_name=table_name, start_date=start_date, end_date=end_date, columns=columns))
             device_output = self.set_keys_for_device_data(rows)
             return Response(device_output, status=status.HTTP_200_OK)
-        except ValueError as e:
-            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'Error': 'An error occurred while fetching periodic data'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
