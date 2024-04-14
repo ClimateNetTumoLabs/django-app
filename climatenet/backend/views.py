@@ -7,128 +7,129 @@ from .models import DeviceDetail
 from .serializers import DeviceDetailSerializer
 from .queries import *
 
-"""
-Provides a detailed view of device data including
-querying by device ID and time range.
-"""
-
 
 class BaseDataView(APIView):
+    """
+    Base class for device data views.
+    """
 
-    def get_columns_from_db(self, cursor, table_name):
-        columns_query = f'''
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            self.cursor = connections['aws'].cursor()
+        except Exception as e:
+            self.cursor = None
+
+    def get_columns_from_db(self, table_name):
+        columns_query = '''
             SELECT column_name
             FROM information_schema.columns
-            WHERE table_name = '{table_name}'
+            WHERE table_name = %s
             AND column_name NOT IN ('id', 'direction');  -- Exclude the 'id' and 'direction' columns
         '''
-        cursor.execute(columns_query)
-        column_rows = cursor.fetchall()
+        self.cursor.execute(columns_query, [table_name])
+        column_rows = self.cursor.fetchall()
         columns = [row[0] for row in column_rows if row[0] != 'time']
-        columns_str = ', '.join([f"ROUND(AVG({elem})::numeric, 2)::float AS {elem}" for elem in columns])
-        return columns_str
+        return ', '.join([f"ROUND(AVG({elem})::numeric, 2)::float AS {elem}" for elem in columns])
 
-    def set_keys_for_device_data(self, rows, cursor):
-        columns = [desc[0] for desc in cursor.description]
-        # Create dictionaries for each row with column names as keys
-        device_output = [
-            {columns[i]: row[i] for i in range(len(columns))}
-            for row in rows
-        ]
-        return device_output
+    def set_keys_for_device_data(self, rows):
+        columns = [desc[0] for desc in self.cursor.description]
+        return [{columns[i]: row[i] for i in range(len(columns))} for row in rows]
 
-    def execute_query(self, cursor, query):
-        cursor.execute(query)
-        return cursor.fetchall()
+    def execute_query(self, query):
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
 
     def handle(self):
+        if not self.cursor:
+            raise ValueError('Failed to establish a connection to the database')
+        device_id = self.kwargs.get('device_id')
+        if not (device_id and str(device_id).isdigit()):
+            raise ValueError('Invalid device_id')
+        table_name = f"device{device_id}"
+        return table_name
+
+    def __del__(self):
+        if self.cursor:
+            self.cursor.close()
+
+
+class HourlyDataView(BaseDataView):
+    """
+    A view for fetching 24hours data from device.
+    """
+    def get(self, request, device_id):
         try:
-            device_id = self.kwargs.get('device_id')
-            if not (device_id and str(device_id).isdigit()):
-                return Response({'error': 'Invalid device_id'}, status=status.HTTP_400_BAD_REQUEST)
-            table_name = f"device{device_id}"
-            cursor = connections['aws'].cursor()
-            if not cursor:
-                return Response({'error': 'Failed to establish a connection'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            return cursor, table_name
+            table_name = self.handle()
+            columns = self.get_columns_from_db(table_name)
+            rows = self.execute_query(HOURLY_DATA_QUERY.format(table_name=table_name, columns=columns))
+            device_output = self.set_keys_for_device_data(rows)
+            return Response(device_output, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'Error': 'An error occurred while fetching the hourly data'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class NearDeviceView(BaseDataView):
     """
     A view for fetching data from a nearby device.
-    Inherits from DataView and FetchingDeviceDataView classes.
     """
     def get(self, request, device_id):
-        cursor, table_name = self.handle()
         try:
-            rows = self.execute_query(cursor, NEARBY_DATA_QUERY.format(table_name=table_name))
+            table_name = self.handle()
+            rows = self.execute_query(NEARBY_DATA_QUERY.format(table_name=table_name))
             if rows:
                 return Response(rows, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'Error': 'An error occurred while fetching temperature'},
+            return Response({'Error': 'An error occurred while fetching data from a nearby device'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class PeriodDataView(BaseDataView):
-    """
-    A view for fetching periodic(7days, month, range) data from the device.
-    Inherits from DataView and FetchingDeviceDataView classes.
-    """
-    def get(self, request, device_id, *args, **kwargs):
-        cursor, table_name = self.handle()
-        try:
-            start_date, end_date = map(lambda x: datetime.strptime(self.request.GET.get(x), '%Y-%m-%d'),
-                                       ['start_time_str', 'end_time_str'])
-        except TypeError as e:
-            return Response({'Error': "Cannot parse start_time or end_time"}, status=status.HTTP_400_BAD_REQUEST)
-        # Custom Range or 7 days
-        try:
-            if start_date < end_date:
-                columns = self.get_columns_from_db(cursor, table_name)
-                rows = self.execute_query(cursor, CUSTOM_TIME_QUERY.format(table_name=table_name, start_date=start_date, end_date=end_date, columns=columns))
-                device_output = self.set_keys_for_device_data(rows, cursor)
-                return Response(device_output, status=status.HTTP_200_OK)
-            elif end_date < start_date:
-                return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'Error': e}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LatestDataView(BaseDataView):
     """
-    A view for fetching latest data from the device.
-    Inherits from DataView and FetchingDeviceDataView classes.
+    A view for fetching latest data from a device.
     """
     def get(self, request, device_id):
         try:
-            cursor, table_name = self.handle()
-            rows = self.execute_query(cursor, LATEST_DATA_QUERY.format(table_name=table_name))
-            device_output = self.set_keys_for_device_data(rows, cursor)
+            table_name = self.handle()
+            rows = self.execute_query(LATEST_DATA_QUERY.format(table_name=table_name))
+            device_output = self.set_keys_for_device_data(rows)
             return Response(device_output, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             return Response({'Error': 'An error occurred while fetching the latest data'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class HourlyDataView(BaseDataView):
+class PeriodDataView(BaseDataView):
     """
-    A view for fetching 24hours data from the device.
-    Inherits from DataView and FetchingDeviceDataView classes.
+    A view for fetching periodic (7days, month, range) data from a device.
     """
-    def get(self, request, device_id):
-        cursor, table_name = self.handle()
+    def get(self, request, *args, **kwargs):
         try:
-            columns = self.get_columns_from_db(cursor, table_name)
-            rows = self.execute_query(cursor, HOURLY_DATA_QUERY.format(table_name=table_name, columns=columns))
-            device_output = self.set_keys_for_device_data(rows, cursor)
+            table_name = self.handle()
+            start_date = datetime.strptime(self.request.GET.get('start_time_str'), '%Y-%m-%d')
+            end_date = datetime.strptime(self.request.GET.get('end_time_str'), '%Y-%m-%d')
+            if start_date >= end_date:
+                return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
+            columns = self.get_columns_from_db(table_name)
+            rows = self.execute_query(CUSTOM_TIME_QUERY.format(table_name=table_name, start_date=start_date, end_date=end_date, columns=columns))
+            device_output = self.set_keys_for_device_data(rows)
             return Response(device_output, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({'Error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'Error': 'An error occurred while fetching the hourly data'},
+            return Response({'Error': 'An error occurred while fetching periodic data'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class DeviceInnerViewSet(viewsets.ModelViewSet):
+    """
+    A ViewSet for handling CRUD operations on DeviceDetail objects.
+    """
     queryset = DeviceDetail.objects.all()
     serializer_class = DeviceDetailSerializer

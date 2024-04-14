@@ -1,5 +1,5 @@
 from django.contrib import admin
-from backend.models import DeviceDetail
+from .models import DeviceDetail
 
 
 # Customize the admin site title and header
