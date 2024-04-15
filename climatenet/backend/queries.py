@@ -1,3 +1,4 @@
+# Latest data fetching query
 LATEST_DATA_QUERY = "SELECT * FROM {table_name} ORDER BY id DESC LIMIT 1;"
 
 # Fetch data for the last 24 hours

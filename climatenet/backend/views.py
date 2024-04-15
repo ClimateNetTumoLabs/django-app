@@ -117,16 +117,16 @@ class HourlyDataView(BaseDataView):
         Returns:
             Response: Response object containing device data.
         """
-        try:
-            with connections['aws'].cursor() as cursor:
+        with connections['aws'].cursor() as cursor:
+            try:
                 table_name = self.handle()
                 columns = self.get_columns_from_db(table_name, cursor)
                 rows = self.execute_query(HOURLY_DATA_QUERY.format(table_name=table_name, columns=columns), cursor)
                 device_output = self.set_keys_for_device_data(rows, cursor)
-            return Response(device_output, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'Error': str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(device_output, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'Error': str(e)},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class NearDeviceView(BaseDataView):
@@ -144,15 +144,15 @@ class NearDeviceView(BaseDataView):
         Returns:
             Response: Response object containing nearby device data.
         """
-        try:
-            with connections['aws'].cursor() as cursor:
+        with connections['aws'].cursor() as cursor:
+            try:
                 table_name = self.handle()
                 rows = self.execute_query(NEARBY_DATA_QUERY.format(table_name=table_name), cursor)
                 if rows:
                     return Response(rows, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'Error': str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                return Response({'Error': str(e)},
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LatestDataView(BaseDataView):
@@ -170,51 +170,37 @@ class LatestDataView(BaseDataView):
         Returns:
             Response: Response object containing latest device data.
         """
-        try:
-            with connections['aws'].cursor() as cursor:
+        with connections['aws'].cursor() as cursor:
+            try:
                 table_name = self.handle()
                 rows = self.execute_query(LATEST_DATA_QUERY.format(table_name=table_name), cursor)
                 device_output = self.set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'Error': str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                return Response({'Error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PeriodDataView(BaseDataView):
     """
     A view for fetching periodic (7days, month, range) data from a device.
     """
-    def get(self, request, *args, **kwargs):
-        """
-        Get periodic data from the device.
-
-        Args:
-            request: HTTP request object.
-            args: Additional arguments.
-            kwargs: Additional keyword arguments.
-
-        Returns:
-            Response: Response object containing periodic device data.
-        """
+    def get(self):
         table_name = self.handle()
         try:
             start_date = datetime.strptime(self.request.GET.get('start_time_str'), '%Y-%m-%d')
             end_date = datetime.strptime(self.request.GET.get('end_time_str'), '%Y-%m-%d')
-        except ValueError:
-            return Response({'Error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
-        if start_date >= end_date:
-            return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
-        try:
+            if start_date >= end_date:
+                return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
+
             with connections['aws'].cursor() as cursor:
                 columns = self.get_columns_from_db(table_name, cursor)
                 rows = self.execute_query(CUSTOM_TIME_QUERY.format(table_name=table_name, start_date=start_date,
                                                                    end_date=end_date, columns=columns), cursor)
                 device_output = self.set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response({'Error': str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        except (ValueError, Exception) as e:
+            return Response({'Error': e}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DeviceInnerViewSet(viewsets.ModelViewSet):
