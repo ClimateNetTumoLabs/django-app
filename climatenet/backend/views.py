@@ -26,7 +26,7 @@ from django.db import connections
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import DeviceDetail
+from .models import Device
 from .serializers import DeviceDetailSerializer
 from .queries import *
 
@@ -219,7 +219,7 @@ class PeriodDataView(BaseDataView):
 
 class DeviceInnerViewSet(viewsets.ModelViewSet):
     """
-    A ViewSet for handling CRUD operations on DeviceDetail objects.
+    A ViewSet for handling CRUD operations on Device objects.
     """
-    queryset = DeviceDetail.objects.all()
+    queryset = Device.objects.all()
     serializer_class = DeviceDetailSerializer
