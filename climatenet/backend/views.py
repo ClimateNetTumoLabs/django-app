@@ -185,6 +185,23 @@ class PeriodDataView(BaseDataView):
     A view for fetching periodic (7days, month, range) data from a device.
     """
     def get(self):
+        """
+        Fetches periodic (7 days, month, range) data from a device.
+
+        Returns:
+            Response: A response containing the fetched device data.
+                - If successful, returns device data with status HTTP_200_OK.
+                - If unsuccessful due to invalid input or database error, returns an error message with status HTTP_400_BAD_REQUEST.
+
+        Raises:
+            Exception: If an unexpected error occurs during data retrieval.
+
+        Note:
+            The method expects 'start_time_str' and 'end_time_str' parameters in the request GET parameters, formatted as '%Y-%m-%d'.
+            It queries the AWS database using a custom query constructed based on the provided start and end dates.
+            The fetched data is transformed into a dictionary with appropriate keys representing device data.
+        """
+
         table_name = self.handle()
         try:
             start_date = datetime.strptime(self.request.GET.get('start_time_str'), '%Y-%m-%d')
