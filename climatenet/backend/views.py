@@ -28,7 +28,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Device
 from .serializers import DeviceDetailSerializer
-from .queries import *
+from .sql_queries import *
 
 
 class BaseDataView(APIView):
@@ -46,12 +46,7 @@ class BaseDataView(APIView):
         Returns:
             str: Comma-separated string of column names.
         """
-        columns_query = '''
-            SELECT column_name
-            FROM information_schema.columns
-            WHERE table_name = %s
-            AND column_name NOT IN ('id', 'direction');  -- Exclude the 'id' and 'direction' columns
-        '''
+        columns_query = COLUMN_FROM_DB_QUERY  # from sql_queries
         cursor.execute(columns_query, [table_name])
         column_rows = cursor.fetchall()
         columns = [row[0] for row in column_rows if row[0] != 'time']
@@ -117,16 +112,16 @@ class HourlyDataView(BaseDataView):
         Returns:
             Response: Response object containing device data.
         """
-        with connections['aws'].cursor() as cursor:
-            try:
+        try:
+            with connections['aws'].cursor() as cursor:
                 table_name = self.handle()
                 columns = self.get_columns_from_db(table_name, cursor)
                 rows = self.execute_query(HOURLY_DATA_QUERY.format(table_name=table_name, columns=columns), cursor)
                 device_output = self.set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({'Error': str(e)},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({'Error': str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class NearDeviceView(BaseDataView):
@@ -144,15 +139,16 @@ class NearDeviceView(BaseDataView):
         Returns:
             Response: Response object containing nearby device data.
         """
-        with connections['aws'].cursor() as cursor:
-            try:
+
+        try:
+            with connections['aws'].cursor() as cursor:
                 table_name = self.handle()
                 rows = self.execute_query(NEARBY_DATA_QUERY.format(table_name=table_name), cursor)
                 if rows:
                     return Response(rows, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({'Error': str(e)},
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({'Error': str(e)},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class LatestDataView(BaseDataView):
@@ -170,14 +166,14 @@ class LatestDataView(BaseDataView):
         Returns:
             Response: Response object containing latest device data.
         """
-        with connections['aws'].cursor() as cursor:
-            try:
+        try:
+            with connections['aws'].cursor() as cursor:
                 table_name = self.handle()
                 rows = self.execute_query(LATEST_DATA_QUERY.format(table_name=table_name), cursor)
                 device_output = self.set_keys_for_device_data(rows, cursor)
                 return Response(device_output, status=status.HTTP_200_OK)
-            except Exception as e:
-                return Response({'Error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            return Response({'Error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PeriodDataView(BaseDataView):

@@ -35,3 +35,9 @@ CUSTOM_TIME_QUERY = '''SELECT
 
 # Nearby data fetching query
 NEARBY_DATA_QUERY = "SELECT temperature FROM {table_name} ORDER BY id DESC LIMIT 1;"
+
+# Fetching columns from db
+COLUMN_FROM_DB_QUERY = '''SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = %s
+            AND column_name NOT IN ('id', 'direction'); '''
