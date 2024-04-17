@@ -180,7 +180,7 @@ class PeriodDataView(BaseDataView):
     """
     A view for fetching periodic (7days, month, range) data from a device.
     """
-    def get(self):
+    def get(self, request, device_id):
         """
         Fetches periodic (7 days, month, range) data from a device.
 
