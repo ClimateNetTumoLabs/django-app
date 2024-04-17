@@ -13,22 +13,34 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3 python3-pip  # Install Python and pip
-        sudo pip3 install virtualenv  # Install virtualenv (optional)
-        cd /home/ubuntu/workspace/django-app/climatenet
-        source venv/bin/activate && pip install -r /home/ubuntu/workspace/django-app/climatenet/requirements.txt
+    # Install Node.js and npm
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
 
-    - name: Deploy to EC2
+    # Install npm dependencies and build frontend
+    - name: Build frontend
+      run: |
+        cd /home/ubuntu/workspace/frontend
+        npm install
+        npm run build
+
+    # SSH into EC2 instance and deploy
+    - name: SSH into EC2 instance and deploy
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.TEST_HOST }}
         username: ${{ secrets.TEST_USERNAME }}
         key: ${{ secrets.TEST_SSH_KEY }}
+        port: 22
         script: |
-          cd /home/ubuntu/workspace/django-app/climatenet/
-          git pull origin staging
-          source venv/bin/activate
-          gunicorn climatenet.wsgi:application --bind 0.0.0.0:8000
+          ssh -i ${{ secrets.TEST_SSH_KEY }} ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }} '
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip  # Install Python and pip
+            sudo pip3 install virtualenv  # Install virtualenv (optional)
+            cd /home/ubuntu/workspace/django-app
+            git pull origin staging
+            source venv/bin/activate
+            python manage.py collectstatic --noinput
+            gunicorn climatenet.wsgi:application --bind 0.0.0.0:8000'
