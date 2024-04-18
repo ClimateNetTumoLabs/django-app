@@ -33,7 +33,7 @@ jobs:
         username: ${{ secrets.TEST_USERNAME }}
         key: ${{ secrets.TEST_SSH_KEY }}
         port: 22
-        script: |
+        run: |
           ssh -i ${{ secrets.TEST_SSH_KEY }} ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             sudo apt update
             sudo apt install -y python3 python3-pip  # Install Python and pip
