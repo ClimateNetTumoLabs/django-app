@@ -51,5 +51,5 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/django-app/climatenet/ && \
-            python3 manage.py collectstatic --noinput\
+            python3 manage.py collectstatic --noinput && \
             python3 manage.py runserver
