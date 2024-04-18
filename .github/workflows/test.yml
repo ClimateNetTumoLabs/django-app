@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Set up SSH
         env:
-          TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+          TEST_PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
         run: |
-          echo "${{ env.TEST_PRIVATE_KEY }}" > test_key.pem
+          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
           chmod 600 test_key.pem
 
       - name: Git Checkout and Pull
