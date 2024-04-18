@@ -22,8 +22,7 @@ jobs:
           HOSTNAME: ${{ secrets.TEST_HOST }}
           USER_NAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem \
-            ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app && \
             git checkout staging && git stash && git pull origin staging'
 
@@ -32,8 +31,7 @@ jobs:
           HOSTNAME: ${{ secrets.TEST_HOST }}
           USER_NAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem \
-            ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             source venv/bin/activate && pip install -r requirements.txt'
 
@@ -42,8 +40,7 @@ jobs:
           HOSTNAME: ${{ secrets.TEST_HOST }}
           USER_NAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem \
-            ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             sudo systemctl daemon-reload && \
             sudo systemctl restart nginx'
 
@@ -52,8 +49,7 @@ jobs:
           HOSTNAME: ${{ secrets.TEST_HOST }}
           USER_NAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem \
-            ${{ env.TEST_USERNAME }}@${{ env.TEST_HOSTNAME }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOSTNAME }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             echo yes | python3 manage.py collectstatic && \
             sudo systemctl restart gunicorn.service'
