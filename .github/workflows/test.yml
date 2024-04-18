@@ -41,8 +41,7 @@ jobs:
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
-            sudo systemctl daemon-reload && \
-            sudo systemctl restart nginx'
+            sudo systemctl daemon-reload && sudo systemctl restart nginx'
 
       - name: Collect Static and Restart Gunicorn
         env:
