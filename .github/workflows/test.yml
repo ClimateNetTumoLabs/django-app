@@ -22,7 +22,7 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app && \
             git checkout staging && git stash && git pull origin staging'
 
@@ -31,7 +31,7 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             source venv/bin/activate && pip install -r requirements.txt'
 
@@ -40,7 +40,7 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             sudo systemctl daemon-reload && \
             sudo systemctl restart nginx'
 
@@ -49,7 +49,7 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             echo yes | python3 manage.py collectstatic && \
-            sudo systemctl restart gunicorn.service'
+            python3 manage.py runserver
