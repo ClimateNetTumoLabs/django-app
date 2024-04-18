@@ -10,19 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up SSH
-        env:
-          TEST_PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
-        run: |
-          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
-          chmod 600 test_key.pem
+#      - name: Set up SSH
+#        env:
+#          TEST_PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
+#        run: |
+#          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
+#          chmod 600 test_key.pem
 
       - name: Git Checkout and Pull
         env:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+          TEST_PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
+          chmod 600 test_key.pem
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app && \
             git checkout staging && git stash && git pull origin staging'
 
@@ -31,7 +34,7 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             source venv/bin/activate && pip install -r requirements.txt'
 
