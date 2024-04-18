@@ -12,15 +12,15 @@ jobs:
     steps:
       - name: Set up SSH
         env:
-          PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
+          TEST_PRIVATE_KEY: ${{ secrets.TEST_PRIVATE_KEY }}
         run: |
-          echo "${{ env.TEST_KEY }}" > test_key.pem
+          echo "${{ env.TEST_PRIVATE_KEY }}" > test_key.pem
           chmod 600 test_key.pem
 
       - name: Git Checkout and Pull
         env:
-          HOSTNAME: ${{ secrets.TEST_HOST }}
-          USER_NAME: ${{ secrets.TEST_USERNAME }}
+          TEST_HOST: ${{ secrets.TEST_HOST }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app && \
@@ -28,8 +28,8 @@ jobs:
 
       - name: Install Dependencies
         env:
-          HOSTNAME: ${{ secrets.TEST_HOST }}
-          USER_NAME: ${{ secrets.TEST_USERNAME }}
+          TEST_HOST: ${{ secrets.TEST_HOST }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
@@ -37,8 +37,8 @@ jobs:
 
       - name: Restart Nginx
         env:
-          HOSTNAME: ${{ secrets.TEST_HOST }}
-          USER_NAME: ${{ secrets.TEST_USERNAME }}
+          TEST_HOST: ${{ secrets.TEST_HOST }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             sudo systemctl daemon-reload && \
@@ -46,10 +46,10 @@ jobs:
 
       - name: Collect Static and Restart Gunicorn
         env:
-          HOSTNAME: ${{ secrets.TEST_HOST }}
-          USER_NAME: ${{ secrets.TEST_USERNAME }}
+          TEST_HOST: ${{ secrets.TEST_HOST }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOSTNAME }} '
+          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
             cd /home/ubuntu/workspace/django-app/climatenet/ && \
             echo yes | python3 manage.py collectstatic && \
             sudo systemctl restart gunicorn.service'
