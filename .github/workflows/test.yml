@@ -27,9 +27,9 @@ jobs:
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} 
-          'sudo apt update && \
+          sudo apt update && \
           cd /home/ubuntu/django-app/climatenet && \
-          git checkout staging && git stash && git pull origin staging'
+          git checkout staging && git stash && git pull origin staging
 
       - name: Check Virtual Environment and Install Dependencies
         run: |
