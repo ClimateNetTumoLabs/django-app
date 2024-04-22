@@ -27,7 +27,7 @@ jobs:
         run: |
             sudo apt update && \
             cd /home/ubuntu/django-app/climatenet && \
-            git checkout staging && git stash && git pull origin staging'
+            git checkout staging && git stash && git pull origin staging
 
       - name: Check Virtual Environment and Install Dependencies
 #        env:
