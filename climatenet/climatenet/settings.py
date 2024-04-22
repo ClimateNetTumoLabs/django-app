@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', "localhost", '3.89.111.184']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', "localhost"]
 APPEND_SLASH = True
 
 DATABASES = {
