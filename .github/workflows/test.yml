@@ -16,8 +16,8 @@ jobs:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          sudo apt update && \
-          ssh -i <(echo "$TEST_SSH_KEY") $TEST_USERNAME@$TEST_HOST '
+          'ssh -i <(echo "$TEST_SSH_KEY") $TEST_USERNAME@$TEST_HOST && \
+          sudo apt update'
 
       - name: Git Checkout and Pull
 #        env:
