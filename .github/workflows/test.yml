@@ -18,7 +18,7 @@ jobs:
         run: |
           echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
           chmod 600 test_key.pem
-          ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} 
+          'ssh -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
 
       - name: Git Checkout and Pull
 #        env:
