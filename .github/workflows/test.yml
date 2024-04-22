@@ -21,10 +21,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }}
 
       - name: Git Checkout and Pull
-#        env:
-#          TEST_HOST: ${{ secrets.TEST_HOST }}
-#          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+        env:
+          TEST_SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
+          TEST_HOST: ${{ secrets.TEST_HOST }}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
+            ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }}
             sudo apt update && \
             cd /home/ubuntu/django-app/climatenet && \
             git checkout staging && git stash && git pull origin staging
