@@ -10,56 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up SSH
+      - name: Conecting via SSH
         env:
           TEST_SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
-        run: |
-          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
-          chmod 600 test_key.pem
-
-      - name: Git Checkout and Pull
-        env:
           TEST_HOST: ${{ secrets.TEST_HOST }}
           TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem \
-            ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
+          sudo apt update && \
+          ssh -i <(echo "$TEST_SSH_KEY") $TEST_USERNAME@$TEST_HOST '
+
+      - name: Git Checkout and Pull
+#        env:
+#          TEST_HOST: ${{ secrets.TEST_HOST }}
+#          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+        run: |
             sudo apt update && \
             cd /home/ubuntu/django-app/climatenet && \
             git checkout staging && git stash && git pull origin staging'
 
       - name: Check Virtual Environment and Install Dependencies
-        env:
-          TEST_HOST: ${{ secrets.TEST_HOST }}
-          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+#        env:
+#          TEST_HOST: ${{ secrets.TEST_HOST }}
+#          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
-            cd /home/ubuntu/django-app/climatenet/ && \
-            if [ ! -d venv ]; then
-              python3 -m venv venv && \
-              source venv/bin/activate && \
-              pip install -r requirements.txt
-            else
-              source venv/bin/activate && \
-              pip install -r requirements.txt
-            fi'
+            'if [ ! -d venv ]; then
+              python3 -m venv venv && 
+            fi
+            source venv/bin/activate && \
+            pip install -r requirements.txt'
 
       - name: Restart Nginx
-        env:
-          TEST_HOST: ${{ secrets.TEST_HOST }}
-          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+#        env:
+#          TEST_HOST: ${{ secrets.TEST_HOST }}
+#          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
-            sudo systemctl daemon-reload && sudo systemctl restart nginx'
+            'sudo systemctl restart nginx'
 
       - name: Collect Static and Restart Gunicorn
-        env:
-          TEST_HOST: ${{ secrets.TEST_HOST }}
-          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+#        env:
+#          TEST_HOST: ${{ secrets.TEST_HOST }}
+#          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} '
-            cd /home/ubuntu/django-app/climatenet/ && \
-            source venv/bin/activate && \
-            python3 manage.py collectstatic --noinput && \
+            'python3 manage.py collectstatic --noinput && \
             sudo systemctl daemon-reload && \
             sudo systemctl restart gunicorn.service'
