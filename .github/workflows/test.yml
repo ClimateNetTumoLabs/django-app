@@ -22,35 +22,24 @@ jobs:
 
       - name: Git commands
         run: |
-          $SSH_COMMAND 
-          sudo apt update &&
-          cd /home/ubuntu/django-app/climatenet &&
-          git checkout staging && git stash && git pull origin staging
-
-      - name: Git Checkout and Pull
-        run: |
-          $SSH_COMMAND'
-            sudo apt update && \
-            cd /home/ubuntu/django-app/climatenet && \
-            git checkout staging && git stash && git pull origin staging'
+          $SSH_COMMAND "sudo apt update &&
+                        cd /home/ubuntu/django-app/climatenet &&
+                        git checkout staging && git stash && git pull origin staging"
 
       - name: Check Virtual Environment and Install Dependencies
         run: |
-          $SSH_COMMAND'
-          if [ ! -d venv ]; then
-            python3 -m venv venv
-          fi
-          source venv/bin/activate && \
-          pip install -r requirements.txt'
+          $SSH_COMMAND 'if [ ! -d venv ]; then
+                          python3 -m venv venv
+                        fi
+                        source venv/bin/activate &&
+                        pip install -r requirements.txt'
 
       - name: Restart Nginx
         run: |
-          $SSH_COMMAND'
-          sudo systemctl restart nginx'
+          $SSH_COMMAND 'sudo systemctl restart nginx'
 
       - name: Collect Static and Restart Gunicorn
         run: |
-          $SSH_COMMAND'
-          python3 manage.py collectstatic --noinput && \
-          sudo systemctl daemon-reload && \
-          sudo systemctl restart gunicorn.service'
+          $SSH_COMMAND 'python3 manage.py collectstatic --noinput &&
+                        sudo systemctl daemon-reload &&
+                        sudo systemctl restart gunicorn.service'
