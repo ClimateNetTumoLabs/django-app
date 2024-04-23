@@ -15,7 +15,6 @@ jobs:
       # Step 1: Set up SSH
       - name: Set up SSH and commands
         run:
-          mkdir -p ~/.ssh
           echo "${{ secrets.TEST_SSH_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
           ssh -i ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }}
