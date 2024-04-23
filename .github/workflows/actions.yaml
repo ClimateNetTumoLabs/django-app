@@ -1,0 +1,14 @@
+# actions.yaml
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up SSH connection
+      env:
+        HOSTNAME: ${{ inputs.hostname }}
+        USERNAME: ${{ inputs.username }}
+        SSH_KEY: ${{ inputs.ssh_key }}
+      run: |
+        echo "$SSH_KEY" > ssh_key.pem
+        chmod 600 ssh_key.pem
+        ssh -i ssh_key.pem $USERNAME@$HOSTNAME

@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up SSH connection
-        uses: ssh-action@v2
+      - name: Set up SSH connection and execute commands
+        uses: ./actions.yaml
         with:
           hostname: ${{ secrets.TEST_HOST }}
           username: ${{ secrets.TEST_USERNAME }}
