@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
       - name: Deploy in EC2 and execute commands
         env:
           PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
