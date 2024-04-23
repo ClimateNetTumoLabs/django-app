@@ -2,46 +2,32 @@ name: Deploy on push staging
 
 on:
   push:
-    branches: staging
+    branches:
+      - staging
 
-    jobs:
-      Deploy:
-        runs-on: ubuntu-latest
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
 
-      steps:
-        - uses: actions/checkout@v2
-        - name: Deploy in EC2
-          env:
-              PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
-              HOSTNAME : ${{ secrets.TEST_HOSTNAME  }}
-              USER_NAME : ${{ secrets.TEST_USERNAME }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy in EC2
+        env:
+          PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
+          HOSTNAME: ${{ secrets.TEST_HOSTNAME }}
+          USER_NAME: ${{ secrets.TEST_USERNAME }}
 
-          run: |
-            echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-            ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME}
+        run: |
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME}
 
-        - name: Git Checkout and Pull
-          run: |
-            sudo apt update && \
-            cd /home/ubuntu/django-app/climatenet && \
-            git checkout staging && git stash && git pull origin staging
+      - name: Git Checkout and Pull
+        run: |
+          sudo apt update && \
+          cd /home/ubuntu/django-app/climatenet && \
+          git checkout staging && git stash && git pull origin staging
 
-        - name: Check Virtual Environment and Install Dependencies
-          run: |
-            cd /home/ubuntu/django-app/climatenet/ && \
-            if [ ! -d venv ]; then
-              python3 -m venv venv && \
-            fi
-            source venv/bin/activate && \
-            pip install -r requirements.txt
-
-        - name: Restart Nginx
-          run: |
-            sudo systemctl restart nginx
-
-        - name: Collect Static and Restart Gunicorn
-          run: |
-            cd /home/ubuntu/django-app/climatenet/ && \
-            python3 manage.py collectstatic --noinput && \
-            sudo systemctl daemon-reload && \
-            sudo systemctl restart gunicorn.service
+      - name: Check Virtual Environment and Install Dependencies
+        run: |
+          cd /home/ubuntu/django-app/climatenet/ && \
+          if [ ! -d venv ]; 
