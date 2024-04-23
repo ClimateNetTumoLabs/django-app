@@ -13,6 +13,8 @@ jobs:
       - name: Set up SSH
         env:
           TEST_SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
+          TEST_HOST: ${{ secrets.TEST_HOST}}
+          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
           echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
           chmod 600 test_key.pem
