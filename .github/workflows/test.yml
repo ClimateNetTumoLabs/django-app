@@ -14,7 +14,7 @@ jobs:
       - name: Deploy in EC2
         env:
           PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
-          HOSTNAME: ${{ secrets.TEST_HOSTNAME }}
+          HOSTNAME: ${{ secrets.TEST_HOST }}
           USER_NAME: ${{ secrets.TEST_USERNAME }}
 
         run: |
