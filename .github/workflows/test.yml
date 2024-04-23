@@ -13,27 +13,21 @@ jobs:
 
     steps:
       # Step 1: Set up SSH
-      - name: Set up SSH
-        run: |
+      - name: Set up SSH and commands
+        run:
           mkdir -p ~/.ssh
           echo "${{ secrets.TEST_SSH_KEY }}" > ssh_key.pem
           chmod 600 ssh_key.pem
-          printf "Host myserver\n" \
-                 "  HostName ${{ secrets.TEST_HOST }}\n" \
-                 "  User ${{ secrets.TEST_USERNAME }}\n" \
-                 "  IdentityFile /github/workspace/ssh_key.pem\n" \
-                 "  StrictHostKeyChecking no\n" > ~/.ssh/config
-      # Step 2: Git Checkout and Pull
+          ssh -i ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }}
 
       - name: Git Checkout and Pull
-        run: |
-            ssh ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }} \
+        run:
             sudo apt update && \
             cd /home/ubuntu/django-app/climatenet && \
             git checkout staging && git stash && git pull origin staging
 
       - name: Check Virtual Environment and Install Dependencies
-        run: |
+        run:
             cd /home/ubuntu/django-app/climatenet/ && \
             if [ ! -d venv ]; then
               python3 -m venv venv && \
@@ -42,11 +36,11 @@ jobs:
             pip install -r requirements.txt
 
       - name: Restart Nginx
-        run: |
+        run:
             sudo systemctl restart nginx
 
       - name: Collect Static and Restart Gunicorn
-        run: |
+        run:
             cd /home/ubuntu/django-app/climatenet/ && \
             python3 manage.py collectstatic --noinput && \
             sudo systemctl daemon-reload && \
