@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Deploy in EC2 and execute commands
         env:
           PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
@@ -20,8 +23,9 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
           ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
-          ls
           pwd
+          ls -la
+          ../tree
           scp -i private_key .github/workflows/test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
           ssh -o StrictHostKeyChecking=yes -i private_key ${USER_NAME}@${HOSTNAME} '
           chmod +x test.sh && \
