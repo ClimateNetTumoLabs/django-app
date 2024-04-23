@@ -21,4 +21,5 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -i private_key ${USER_NAME}@${HOSTNAME} 'bash -s' < test.sh
+          scp -i private_key deploy.sh ${USER_NAME}@${HOSTNAME}:/tmp/deploy.sh
+          ssh -i private_key ${USER_NAME}@${HOSTNAME} '/tmp/deploy.sh'
