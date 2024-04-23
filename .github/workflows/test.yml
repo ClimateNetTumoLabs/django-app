@@ -21,7 +21,6 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
           ssh -i private_key ${USER_NAME}@${HOSTNAME} '
           cd /home/ubuntu/django-app/climatenet
           
