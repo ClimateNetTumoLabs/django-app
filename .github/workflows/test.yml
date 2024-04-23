@@ -21,10 +21,9 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
           ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
           scp -i private_key .github/workflows/test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
-          ssh -o StrictHostKeyChecking=yes -i private_key ${USER_NAME}@${HOSTNAME} '
+          ssh -i private_key ${USER_NAME}@${HOSTNAME} '
           chmod +x test.sh && \
           ./test.sh && \
           rm test.sh'
