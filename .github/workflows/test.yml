@@ -22,8 +22,19 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
-          scp -i private_key .github/workflows/test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
           ssh -i private_key ${USER_NAME}@${HOSTNAME} '
-          chmod +x test.sh && \
-          ./test.sh && \
-          rm test.sh'
+          cd /home/ubuntu/django-app/climatenet
+          
+          git checkout staging
+          git stash
+          git pull origin staging
+          
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          python manage.py collectstatic --noinput
+          
+          sudo systemctl daemon-reload
+          sudo systemctl restart gunicorn
+          
+          sudo systemctl restart nginx'
