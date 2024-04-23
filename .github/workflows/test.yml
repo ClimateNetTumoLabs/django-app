@@ -27,4 +27,6 @@ jobs:
           tree ../
           ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
           scp -i private_key .github/workflows/test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
-          ssh -o StrictHostKeyChecking=yes -i private_key ${USER_NAME}@${HOSTNAME} '/home/${USER_NAME}/test.sh'
+          ssh -o StrictHostKeyChecking=yes -i private_key ${USER_NAME}@${HOSTNAME} '
+          chmod +x test.sh && \
+          ./test.sh'
