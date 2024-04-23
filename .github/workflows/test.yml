@@ -18,21 +18,17 @@ jobs:
 
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-#         git commands
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} << 'EOF'
           sudo apt update && \
           cd /home/ubuntu/django-app/climatenet && \
           git checkout staging && git stash && git pull origin staging && \
-#         activating venv and installing requirements
           if [ ! -d venv ]; then \
             python3 -m venv venv; \
           fi && \
           source venv/bin/activate && \
           pip install -r requirements.txt && \
-#         restart nginx
           sudo systemctl restart nginx && \
-#         collect static
           python3 manage.py collectstatic --noinput && \
-#         restart gunicorn
           sudo systemctl daemon-reload && \
-          sudo systemctl restart gunicorn.service'
+          sudo systemctl restart gunicorn.service
+          EOF
