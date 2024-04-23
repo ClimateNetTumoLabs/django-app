@@ -1,5 +1,3 @@
-
-
 name: Deploy on push staging
 
 on:
@@ -11,36 +9,48 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    steps:
-      # Step 1: Set up SSH
-      - name: Set up SSH and commands
-        run:
-          echo "${{ secrets.TEST_SSH_KEY }}" > ssh_key.pem
-          chmod 600 ssh_key.pem
-          ssh -i ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }}
+actions:
+  ssh_to_server:
+    runs:
+      using: "composite"
+      steps:
+        - name: Set up SSH connection
+          env:
+            HOSTNAME: ${{ secrets.TEST_HOST }}
+            USERNAME: ${{ secrets.TEST_USERNAME }}
+            SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
+          run: |
+            echo "$SSH_KEY" > ssh_key.pem
+            chmod 600 ssh_key.pem
+            ssh -i ssh_key.pem $USERNAME@$HOSTNAME
 
-      - name: Git Checkout and Pull
-        run:
-            sudo apt update && \
-            cd /home/ubuntu/django-app/climatenet && \
-            git checkout staging && git stash && git pull origin staging
+steps:
+  - name: Git Checkout and Pull
+    action: ssh_to_server
+    run: |
+      sudo apt update && \
+      cd /home/ubuntu/django-app/climatenet && \
+      git checkout staging && git stash && git pull origin staging
 
-      - name: Check Virtual Environment and Install Dependencies
-        run:
-            cd /home/ubuntu/django-app/climatenet/ && \
-            if [ ! -d venv ]; then
-              python3 -m venv venv && \
-            fi
-            source venv/bin/activate && \
-            pip install -r requirements.txt
+  - name: Check Virtual Environment and Install Dependencies
+    action: ssh_to_server
+    run:
+        cd /home/ubuntu/django-app/climatenet/ && \
+        if [ ! -d venv ]; then
+          python3 -m venv venv && \
+        fi
+        source venv/bin/activate && \
+        pip install -r requirements.txt
 
-      - name: Restart Nginx
-        run:
-            sudo systemctl restart nginx
+  - name: Restart Nginx
+    action: ssh_to_server
+    run:
+        sudo systemctl restart nginx
 
-      - name: Collect Static and Restart Gunicorn
-        run:
-            cd /home/ubuntu/django-app/climatenet/ && \
-            python3 manage.py collectstatic --noinput && \
-            sudo systemctl daemon-reload && \
-            sudo systemctl restart gunicorn.service
+  - name: Collect Static and Restart Gunicorn
+    action: ssh_to_server
+    run:
+        cd /home/ubuntu/django-app/climatenet/ && \
+        python3 manage.py collectstatic --noinput && \
+        sudo systemctl daemon-reload && \
+        sudo systemctl restart gunicorn.service
