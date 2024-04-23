@@ -26,12 +26,14 @@ jobs:
 
     steps:
       - name: Git Checkout and Pull
+        action: ssh_to_server
         run: |
           sudo apt update && \
           cd /home/ubuntu/django-app/climatenet && \
           git checkout staging && git stash && git pull origin staging
 
       - name: Check Virtual Environment and Install Dependencies
+        action: ssh_to_server
         run:
           cd /home/ubuntu/django-app/climatenet/ && \
           if [ ! -d venv ]; then
@@ -41,10 +43,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: Restart Nginx
+        action: ssh_to_server
         run:
           sudo systemctl restart nginx
 
       - name: Collect Static and Restart Gunicorn
+        action: ssh_to_server
         run:
           cd /home/ubuntu/django-app/climatenet/ && \
           python3 manage.py collectstatic --noinput && \
