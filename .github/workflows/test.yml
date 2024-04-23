@@ -1,3 +1,5 @@
+
+
 name: Deploy on push staging
 
 on:
@@ -10,23 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Set up SSH
       - name: Set up SSH
-        env:
-          TEST_SSH_KEY: ${{ secrets.TEST_SSH_KEY }}
-          TEST_HOST: ${{ secrets.TEST_HOST}}
-          TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
         run: |
-          echo "${{ env.TEST_SSH_KEY }}" > test_key.pem
-          chmod 600 test_key.pem
-          ssh -o StrictHostKeyChecking=no -i test_key.pem ${{ env.TEST_USERNAME }}@${{ env.TEST_HOST }} 
+          mkdir -p ~/.ssh
+          echo "${{ secrets.TEST_SSH_KEY }}" > ssh_key.pem
+          chmod 600 ssh_key.pem
+          printf "Host myserver\n" \
+                 "  HostName ${{ secrets.TEST_HOST }}\n" \
+                 "  User ${{ secrets.TEST_USERNAME }}\n" \
+                 "  IdentityFile /github/workspace/ssh_key.pem\n" \
+                 "  StrictHostKeyChecking no\n" > ~/.ssh/config
+      # Step 2: Git Checkout and Pull
 
       - name: Git Checkout and Pull
-        script:
-            -sudo apt update &&
-            -cd /home/ubuntu/django-app/climatenet
-            -git checkout staging
-            -git stash
-            -git pull origin staging
+        run: |
+            ssh ${{ secrets.TEST_USERNAME }}@${{ secrets.TEST_HOST }} \
+            sudo apt update && \
+            cd /home/ubuntu/django-app/climatenet && \
+            git checkout staging && git stash && git pull origin staging
 
       - name: Check Virtual Environment and Install Dependencies
         run: |
