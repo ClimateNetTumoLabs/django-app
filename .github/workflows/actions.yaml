@@ -1,4 +1,14 @@
 # actions.yaml
+name: Deploy on push staging actions
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
 runs:
   using: "composite"
