@@ -26,5 +26,5 @@ jobs:
           pwd
           tree ../
           ssh-keyscan ${HOSTNAME} >> ~/.ssh/known_hosts
-          scp -i private_key test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
+          scp -i private_key .github/workflows/test.sh ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/test.sh
           ssh -o StrictHostKeyChecking=yes -i private_key ${USER_NAME}@${HOSTNAME} '/home/${USER_NAME}/test.sh'
