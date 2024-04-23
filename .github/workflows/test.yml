@@ -20,6 +20,10 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME}
+        run-name:
+          sudo apt update && \
+          cd /home/ubuntu/django-app/climatenet && \
+          git checkout staging && git stash && git pull origin staging
 
       - name: Git Checkout and Pull
         run: |
