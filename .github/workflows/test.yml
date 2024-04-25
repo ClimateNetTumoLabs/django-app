@@ -19,6 +19,7 @@ jobs:
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
           ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
 
+          cd /home/ubuntu/django-app/climatenet
           git checkout staging && \
           git stash && \
           git pull origin staging && \
