@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', "localhost", '3.89.111.184']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1']
 APPEND_SLASH = True
 
 DATABASES = {
@@ -78,17 +78,12 @@ STATICFILES_DIRS = [
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    "https://localhost:3000",
-    "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://climatenet.am",
     "https://dev.climatenet.am",
-    "http://3.89.111.184"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-
 
 CORS_ALLOW_HEADERS = [
     'accept',
