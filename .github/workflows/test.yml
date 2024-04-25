@@ -1,18 +1,18 @@
-name: Deploy on push staging  # Description: This workflow triggers deployment when code is pushed to the staging branch
+name: Deploy on push dev # Description: This workflow triggers deployment when code is pushed to the staging branch
 
 on:
   push:
     branches:
-      - staging  # Trigger: Deploy when pushing changes to the staging branch
+      - dev  # Trigger: Deploy when pushing changes to the staging branch
 jobs:
   Deploy:
     runs-on: ubuntu-latest  # Specify the operating system for the job
     steps:
       - name: Deploy in EC2 and execute commands  # Step: Deploy code and execute commands on the EC2 instance
         env:
-          PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}  # Environment variable: SSH private key
-          HOSTNAME: ${{ secrets.TEST_HOST }}  # Environment variable: Hostname of the EC2 instance
-          USERNAME: ${{ secrets.TEST_USERNAME }}  # Environment variable: SSH username
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
+          HOSTNAME: ${{ secrets.EC2_IP }}  # Environment variable: Hostname of the EC2 instance
+          USERNAME: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH username
 
         # SSH into the EC2 instance and execute commands
         run: |
@@ -20,9 +20,9 @@ jobs:
           ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
 
           cd /home/ubuntu/django-app/climatenet
-          git checkout staging && \
+          git checkout dev && \
           git stash && \
-          git pull origin staging && \
+          git pull origin dev && \
                
           source venv/bin/activate && \
           pip install -r requirements.txt && \
