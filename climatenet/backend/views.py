@@ -21,7 +21,7 @@ Dependencies:
     - .queries: Module containing SQL queries.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db import connections
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
@@ -201,7 +201,7 @@ class PeriodDataView(BaseDataView):
         table_name = self.handle()
         try:
             start_date = datetime.strptime(self.request.GET.get('start_time_str'), '%Y-%m-%d')
-            end_date = datetime.strptime(self.request.GET.get('end_time_str'), '%Y-%m-%d')
+            end_date = datetime.strptime(self.request.GET.get('end_time_str'), '%Y-%m-%d') + timedelta(days=1)
             if start_date >= end_date:
                 return Response({'Error': 'End date must be after start date.'}, status=status.HTTP_400_BAD_REQUEST)
 
