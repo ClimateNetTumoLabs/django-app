@@ -19,20 +19,17 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          cd /home/ubuntu/django-app/climatenet'
-
-      - name: Git commands
-        run: |
-            git checkout staging
-            git stash
-            git pull origin staging
           
-            source venv/bin/activate
-            pip install -r requirements.txt
-            
-            python manage.py collectstatic --noinput
-            
-            sudo systemctl daemon-reload
-            sudo systemctl restart gunicorn
-            
-            sudo systemctl restart nginx'
+          git checkout staging
+          git stash
+          git pull origin staging
+          
+          source venv/bin/activate
+          pip install -r requirements.txt
+          
+          python manage.py collectstatic --noinput
+          
+          sudo systemctl daemon-reload
+          sudo systemctl restart gunicorn
+          
+          sudo systemctl restart nginx'
