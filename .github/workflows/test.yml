@@ -1,35 +1,42 @@
-name: Deploy on push staging
+name: Deploy on push staging  # Description: This workflow triggers deployment when code is pushed to the staging branch
 
 on:
   push:
     branches:
-      - staging
+      - staging  # Trigger: Deploy when pushing changes to the staging branch
 
 jobs:
   Deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Specify the operating system for the job
 
     steps:
-      - name: Deploy in EC2 and execute commands
+      - name: Deploy in EC2 and execute commands  # Step: Deploy code and execute commands on the EC2 instance
         env:
-          PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
-          HOSTNAME: ${{ secrets.TEST_HOST }}
-          USER_NAME: ${{ secrets.TEST_USERNAME }}
+          PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}  # Environment variable: SSH private key
+          HOSTNAME: ${{ secrets.TEST_HOST }}  # Environment variable: Hostname of the EC2 instance
+          USERNAME: ${{ secrets.TEST_USERNAME }}  # Environment variable: SSH username
 
+        # SSH into the EC2 instance and execute commands
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-          
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
+          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
+
+        # Git commands
           git checkout staging
           git stash
           git pull origin staging
-          
+               
+        # Activating the virtual environment and installing requirements
           source venv/bin/activate
           pip install -r requirements.txt
-          
+               
+        # Collect static files without user input
           python manage.py collectstatic --noinput
-          
+
+        # Reload systemd to reflect changes and restart gunicorn service
           sudo systemctl daemon-reload
           sudo systemctl restart gunicorn
           
+        # Restart Nginx service
           sudo systemctl restart nginx'
+
