@@ -6,10 +6,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+DEBUG = False
 
-DEBUG = True
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', '127.0.0.1', "localhost", "https://dev.climatenet.am"]
+SECRET_KEY = os.getenv('SECRET_KEY')
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1']
+
 APPEND_SLASH = True
 
 DATABASES = {
@@ -79,16 +80,12 @@ STATICFILES_DIRS = [
 ]
 
 CORS_ORIGIN_WHITELIST = [
-    "https://localhost:3000",
-    "http://localhost:8000",
     "http://127.0.0.1:8000",
     "http://climatenet.am",
-    "https://dev.climatenet.am"
+    "https://dev.climatenet.am",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-
 
 CORS_ALLOW_HEADERS = [
     'accept',
