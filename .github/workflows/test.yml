@@ -13,7 +13,8 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
           HOSTNAME: ${{ secrets.EC2_IP }}  # Environment variable: Hostname of the EC2 instance
           USERNAME: ${{ secrets.EC2_USERNAME }}  # Environment variable: SSH username
-          DEPLOY_EXIT_CODE: ${{ step.exit_code }}
+          DEPLOY_EXIT_CODE: ${{ steps.Deploy.outputs.exit_code }}
+
 
         # SSH into the EC2 instance and execute commands
         run: |
