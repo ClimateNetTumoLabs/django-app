@@ -13,6 +13,7 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
           HOSTNAME: ${{ secrets.EC2_IP }}  # Environment variable: Hostname of the EC2 instance
           USERNAME: ${{ secrets.EC2_USERNAME }}  # Environment variable: SSH username
+          DEPLOY_EXIT_CODE: ${{ step.exit_code }}
 
         # SSH into the EC2 instance and execute commands
         run: |
@@ -35,3 +36,9 @@ jobs:
           sudo systemctl daemon-reload && \
           sudo systemctl restart gunicorn && \
           sudo systemctl restart nginx'
+
+      - name: Check for deployment errors
+        if: ${{ steps.Deploy.outputs.DEPLOY_EXIT_CODE != 0 }}
+        run: |
+          echo "An error occurred during deployment! (Exit Code: ${{ steps.Deploy.outputs.DEPLOY_EXIT_CODE }})"
+          # Add additional logic here, like sending notifications or failing the workflow
