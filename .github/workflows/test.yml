@@ -18,31 +18,18 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
           ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
-            set -e
-
-            sudo apt update && \
-            
-            cd /home/ubuntu/frontend && \
-            git stash && \
-            git checkout dev && \
-            git pull origin dev && \
-            npm install && \
-            npm run build && \
-            
-            cd /home/ubuntu/django-app/climatenet && \
-            git stash && \
-            git checkout dev && \
-            git pull origin dev && \
+          sudo apt update && \
+          cd /home/ubuntu/django-app/climatenet && \
+          git stash && \
+          git checkout dev && \
+          git pull origin dev && \
+               
+          source venv/bin/activate && \
+          pip install -r requirements.txt && \
+               
+          python manage.py collectstatic --noinput && \
+          python manage.py migrate && \
           
-            source venv/bin/activate && \
-            pip install -r requirements.txt && \
-        
-            python manage.py collectstatic --noinput && \
-            
-            python manage.py migrate && \
-            python manage.py makemigrations && \
-          
-            sudo systemctl daemon-reload && \
-            sudo systemctl restart gunicorn && \
-  
-            sudo systemctl restart nginx'
+          sudo systemctl daemon-reload && \
+          sudo systemctl restart gunicorn && \
+          sudo systemctl restart nginx'
