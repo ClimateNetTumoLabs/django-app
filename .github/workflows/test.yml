@@ -12,16 +12,17 @@ jobs:
         env:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
           HOSTNAME: ${{ secrets.EC2_IP }}  # Environment variable: Hostname of the EC2 instance
-          USERNAME: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH username
+          USERNAME: ${{ secrets.EC2_USERNAME }}  # Environment variable: SSH username
 
         # SSH into the EC2 instance and execute commands
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
           ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
 
-          cd /home/ubuntu/django-app/climatenet
-          git checkout dev && \
+          sudo apt update && \
+          cd /home/ubuntu/django-app/climatenet && \
           git stash && \
+          git checkout dev && \
           git pull origin dev && \
                
           source venv/bin/activate && \
