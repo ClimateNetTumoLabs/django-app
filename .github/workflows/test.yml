@@ -17,20 +17,33 @@ jobs:
         # SSH into the EC2 instance and execute commands
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
-          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
+          if ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} true; then
+            set -e
 
-          sudo apt update && \
-          cd /home/ubuntu/django-app/climatenet && \
-          git stash && \
-          git checkout dev && \
-          git pull origin dev && \
-               
-          source venv/bin/activate && \
-          pip install -r requirements.txt && \
-               
-          python manage.py collectstatic --noinput && \
-
-          sudo systemctl daemon-reload && \
-          sudo systemctl restart gunicorn && \
-
-          sudo systemctl restart nginx'
+            sudo apt update && \
+            
+            cd /home/ubuntu/frontend && \
+            git stash && \
+            git checkout dev && \
+            git pull origin dev && \
+            npm install && \
+            npm run build && \
+            
+            cd /home/ubuntu/django-app/climatenet && \
+            source venv/bin/activate && \
+            pip install -r requirements.txt && \
+            
+            git stash && \
+            git checkout dev && \
+            git pull origin dev && \
+        
+            python manage.py collectstatic --noinput && \
+  
+            sudo systemctl daemon-reload && \
+            sudo systemctl restart gunicorn && \
+  
+            sudo systemctl restart nginx
+          else
+            echo "Error: Unable to establish SSH connection to ${USERNAME}@${HOSTNAME}"
+            exit 1
+          fi
