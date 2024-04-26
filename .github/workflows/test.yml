@@ -29,6 +29,7 @@ jobs:
                
           python manage.py collectstatic --noinput && \
           python manage.py migrate && \
+          python manage.py makemigrations && \
           
           sudo systemctl daemon-reload && \
           sudo systemctl restart gunicorn && \

@@ -89,6 +89,11 @@ CORS_ORIGIN_WHITELIST = [
     "https://3.83.39.131"
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://34.238.245.78",
+    "https://34.238.245.78",
+]
+
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
