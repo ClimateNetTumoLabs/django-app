@@ -15,7 +15,6 @@ jobs:
           USERNAME: ${{ secrets.EC2_USERNAME }}  # Environment variable: SSH username
           DEPLOY_EXIT_CODE: ${{ steps.Deploy.outputs.exit_code }}
 
-
         # SSH into the EC2 instance and execute commands
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
