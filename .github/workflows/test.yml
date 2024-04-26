@@ -30,15 +30,18 @@ jobs:
             npm run build && \
             
             cd /home/ubuntu/django-app/climatenet && \
-            source venv/bin/activate && \
-            pip install -r requirements.txt && \
-            
             git stash && \
             git checkout dev && \
             git pull origin dev && \
+          
+            source venv/bin/activate && \
+            pip install -r requirements.txt && \
         
             python manage.py collectstatic --noinput && \
-  
+            
+            python manage.py migrate && \
+            python manage.py makemigrations && \
+          
             sudo systemctl daemon-reload && \
             sudo systemctl restart gunicorn && \
   
