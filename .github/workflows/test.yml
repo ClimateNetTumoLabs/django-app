@@ -22,7 +22,7 @@ jobs:
         # SSH into the EC2 instance and execute commands
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
-          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
+          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} "
           
           sudo apt update && \
           cd /home/ubuntu/django-app/climatenet && \
@@ -50,4 +50,4 @@ jobs:
           sudo systemctl daemon-reload && \
           sudo systemctl restart gunicorn && \
 
-          sudo systemctl restart nginx'
+          sudo systemctl restart nginx"
