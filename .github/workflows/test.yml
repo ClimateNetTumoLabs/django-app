@@ -35,7 +35,7 @@ jobs:
             echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
             echo "DATABASE_USER=${DATABASE_USER}" >> .env
             echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
-            echo "SECRET_KEY=${SECRET_KEY}" >> .env
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             echo "Created .env file"
           fi  
           
