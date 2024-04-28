@@ -17,7 +17,6 @@ jobs:
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
         # SSH into the EC2 instance and execute commands
         run: |
@@ -35,7 +34,6 @@ jobs:
             echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
             echo "DATABASE_USER=${DATABASE_USER}" >> .env
             echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
             echo "Created .env file"
           fi  
           
