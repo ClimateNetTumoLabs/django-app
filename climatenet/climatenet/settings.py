@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', '44.212.24.65']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', '3.87.218.230']
 
 APPEND_SLASH = True
 
@@ -83,13 +83,13 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8000",
     "http://climatenet.am",
     "https://dev.climatenet.am",
-    "https://44.212.24.65",
-    "http://44.212.24.65"
+    "https://3.87.218.230",
+    "http://3.87.218.230"
 ]
 
 CSRF_TRUSTED_ORIGINS=[
-    "https://44.212.24.65",
-    "http://44.212.24.65"
+    "https://3.87.218.230",
+    "http://3.87.218.230"
 ]
 CORS_ALLOW_CREDENTIALS = True
 

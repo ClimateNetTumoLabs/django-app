@@ -30,17 +30,17 @@ jobs:
           git checkout staging && \
           git pull origin staging && \
           
-          source venv/bin/activate && \
-          pip install -r requirements.txt && \
-          
           if [ ! -f .env ]; then
             echo "DATABASE_HOST=${DATABASE_HOST}" > .env
             echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
             echo "DATABASE_USER=${DATABASE_USER}" >> .env
             echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
-            echo "SECRET_KEY=${SECRET_KEY//\!/\\!}" >> .env
+            echo "SECRET_KEY=${SECRET_KEY}" >> .env
             echo "Created .env file"
           fi  
+          
+          source venv/bin/activate && \
+          pip install -r requirements.txt && \
           
           python manage.py collectstatic --noinput && \
           
