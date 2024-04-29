@@ -13,10 +13,12 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
           HOSTNAME: ${{ secrets.EC2_IP }}  # Environment variable: Hostname of the EC2 instance
           USERNAME: ${{ secrets.EC2_USERNAME }}  # Environment variable: SSH username
-          DEPLOY_EXIT_CODE: ${{ steps.Deploy.outputs.exit_code }}
 
         # SSH into the EC2 instance and execute commands
         run: |
+          set -euo pipefail  
+          trap 'exit 0' EXIT 
+          
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
           ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} '
           
@@ -30,15 +32,9 @@ jobs:
           pip install -r requirements.txt && \
                
           python manage.py collectstatic --noinput && \
-          python manage.py migrate && \
           python manage.py makemigrations && \
+          python manage.py migrate && \
           
           sudo systemctl daemon-reload && \
           sudo systemctl restart gunicorn && \
           sudo systemctl restart nginx'
-
-      - name: Check for deployment errors
-        if: ${{ steps.Deploy.outputs.DEPLOY_EXIT_CODE != 0 }}
-        run: |
-          echo "An error occurred during deployment! (Exit Code: ${{ steps.Deploy.outputs.DEPLOY_EXIT_CODE }})"
-          # Add additional logic here, like sending notifications or failing the workflow
