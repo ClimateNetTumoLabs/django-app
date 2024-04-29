@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - staging  # Trigger: Deploy when pushing changes to the staging branch
+
 jobs:
   Deploy:
     runs-on: ubuntu-latest  # Specify the operating system for the job
     steps:
+      - uses: actions/checkout@v3  # Checkout the code from the repository
+
       - name: Deploy in EC2 and execute commands  # Step: Deploy code and execute commands on the EC2 instance
         env:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
@@ -20,34 +23,46 @@ jobs:
 
         # SSH into the EC2 instance and execute commands
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key 
-          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} "
-          
-          sudo apt update && \
-          cd /home/ubuntu/django-app/climatenet && \
-          git stash && \
-          git checkout staging && \
-          git pull origin staging && \
-          
-          if [ ! -f .env ]; then
-            echo "DATABASE_HOST=${DATABASE_HOST}" > .env
-            echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
-            echo "DATABASE_USER=${DATABASE_USER}" >> .env
-            echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
-            echo "Created .env file"
-          else
-            echo ".env exists"
-          fi  
-          
-          source venv/bin/activate && \
-          pip install -r requirements.txt && \
-          
-          python manage.py collectstatic --noinput && \
-          
-          python manage.py makemigrations --empty backend && \
-          python manage.py migrate && \
-          
-          sudo systemctl daemon-reload && \
-          sudo systemctl restart gunicorn && \
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 
-          sudo systemctl restart nginx"
+          # Wrap SSH commands in a try-catch block
+          try:
+            ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} << EOF
+            
+            sudo apt update && \
+            cd /home/ubuntu/django-app/climatenet && \
+            git stash && \
+            git checkout staging && \
+            git pull origin staging && \
+            
+            if [ ! -f .env ]; then
+              echo "DATABASE_HOST=${DATABASE_HOST}" > .env
+              echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
+              echo "DATABASE_USER=${DATABASE_USER}" >> .env
+              echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
+              echo "Created .env file"
+            else
+              echo ".env exists"
+            fi  
+            
+            source venv/bin/activate && \
+            pip install -r requirements.txt && \
+            
+            python manage.py collectstatic --noinput && \
+            
+            python manage.py makemigrations --empty backend && \
+            python manage.py migrate && \
+            
+            sudo systemctl daemon-reload && \
+            sudo systemctl restart gunicorn && \
+
+            sudo systemctl restart nginx
+            EOF
+          catch err; then
+            echo "SSH command failed with exit code $?" >&2
+            echo "Error message: $err" >&2
+            exit 1
+          fi
+
+          # Remove temporary private key file
+          rm private_key
