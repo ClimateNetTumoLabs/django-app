@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 
 SECRET_KEY = "django-insecure-h28n+_l2r%&+cj!)syu9@7l5juruacb*7_uoye4ba0n*sb&oo6"
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1', '3.87.218.230', '54.243.8.216']
+ALLOWED_HOSTS = ['*']
 
 APPEND_SLASH = True
 
@@ -83,17 +83,11 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8000",
     "http://climatenet.am",
     "https://dev.climatenet.am",
-    "https://3.87.218.230",
-    "http://3.87.218.230",
-    "https://54.243.8.216",
-    "http://54.243.8.216"
+    '*'
 ]
 
 CSRF_TRUSTED_ORIGINS=[
-    "https://3.87.218.230",
-    "http://3.87.218.230",
-    "http://54.243.8.216",
-    "https://54.243.8.216"
+    '*'
 ]
 CORS_ALLOW_CREDENTIALS = True
 
