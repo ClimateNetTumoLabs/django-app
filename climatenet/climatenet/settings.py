@@ -83,6 +83,12 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8000",
     "http://climatenet.am",
     "https://dev.climatenet.am",
+    "http://dev.climatenet.am"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://dev.climatenet.am",
+    "https://dev.climatenet.am"
 ]
 
 CORS_ALLOW_CREDENTIALS = True

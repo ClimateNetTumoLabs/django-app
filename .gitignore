@@ -162,3 +162,5 @@ static/
 mqtt_certificates/
 migrations/
 .DS_Store
+debug.log
+debugger.log
