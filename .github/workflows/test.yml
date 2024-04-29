@@ -1,34 +1,32 @@
-name: Deploy on push staging  # Description: This workflow triggers deployment when code is pushed to the staging branch
+name: Deploy on push staging
 
 on:
   push:
     branches:
-      - staging  # Trigger: Deploy when pushing changes to the staging branch
+      - staging
 
 jobs:
   Deploy:
-    runs-on: ubuntu-latest  # Specify the operating system for the job
-    steps:
-      - uses: actions/checkout@v3  # Checkout the code from the repository
+    runs-on: ubuntu-latest
 
-      - name: Deploy in EC2 and execute commands  # Step: Deploy code and execute commands on the EC2 instance
+    steps:
+      - name: Deploy in EC2 and execute commands
         env:
-          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Environment variable: SSH private key
-          HOSTNAME: ${{ secrets.TEST_HOST }}  # Environment variable: Hostname of the EC2 instance
-          USERNAME: ${{ secrets.TEST_USERNAME }}  # Environment variable: SSH username
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.TEST_HOST }}
+          USERNAME: ${{ secrets.TEST_USERNAME }}
           DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
           DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
           DATABASE_USER: ${{ secrets.DATABASE_USER }}
           DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 
-        # SSH into the EC2 instance and execute commands
         run: |
+          set -euo pipefail  
+          trap 'exit 0' EXIT 
+
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 
-          # Wrap SSH commands in a try-catch block
-          try:
-            ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} << EOF
-            
+          ssh -o StrictHostKeyChecking=accept-new -i private_key ${USERNAME}@${HOSTNAME} "
             sudo apt update && \
             cd /home/ubuntu/django-app/climatenet && \
             git stash && \
@@ -36,33 +34,21 @@ jobs:
             git pull origin staging && \
             
             if [ ! -f .env ]; then
-              echo "DATABASE_HOST=${DATABASE_HOST}" > .env
-              echo "DATABASE_NAME=${DATABASE_NAME}" >> .env
-              echo "DATABASE_USER=${DATABASE_USER}" >> .env
-              echo "DATABASE_PASSWORD=${DATABASE_PASSWORD}" >> .env
-              echo "Created .env file"
+              echo \"DATABASE_HOST=${DATABASE_HOST}\" > .env
+              echo \"DATABASE_NAME=${DATABASE_NAME}\" >> .env
+              echo \"DATABASE_USER=${DATABASE_USER}\" >> .env
+              echo \"DATABASE_PASSWORD=${DATABASE_PASSWORD}\" >> .env
+              echo \"Created .env file\"
             else
-              echo ".env exists"
-            fi  
-            
+              echo \".env exists\"
+            fi
+
             source venv/bin/activate && \
             pip install -r requirements.txt && \
-            
             python manage.py collectstatic --noinput && \
-            
             python manage.py makemigrations --empty backend && \
             python manage.py migrate && \
-            
             sudo systemctl daemon-reload && \
             sudo systemctl restart gunicorn && \
-
             sudo systemctl restart nginx
-            EOF
-          catch err; then
-            echo "SSH command failed with exit code $?" >&2
-            echo "Error message: $err" >&2
-            exit 1
-          fi
-
-          # Remove temporary private key file
-          rm private_key
+          "
