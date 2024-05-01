@@ -28,6 +28,19 @@ jobs:
           git checkout dev && \
           git pull origin dev && \
                
+          if [ ! -f .env ]; then
+            echo "You need to create .env file"
+          else
+            echo \".env exists\"
+          fi
+          
+          if [ -d "venv" ]; then
+            python3 -m venv venv
+            echo "Venv is created"
+          else
+            echo "venv exists"
+          fi
+          
           source venv/bin/activate && \
           pip install -r requirements.txt && \
                
