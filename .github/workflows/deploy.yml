@@ -35,10 +35,10 @@ jobs:
           fi
           
           if [ -d "venv" ]; then
-            python3 -m venv venv
-            echo "Venv is created"
+            echo "Venv exists"
           else
-            echo "venv exists"
+            python3 -m venv venv
+            echo "venv is created"
           fi
           
           source venv/bin/activate && \
