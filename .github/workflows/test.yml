@@ -15,10 +15,6 @@ jobs:
           PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           HOSTNAME: ${{ secrets.TEST_HOST }}
           USERNAME: ${{ secrets.TEST_USERNAME }}
-          DATABASE_HOST: ${{ secrets.DATABASE_HOST }}
-          DATABASE_NAME: ${{ secrets.DATABASE_NAME }}
-          DATABASE_USER: ${{ secrets.DATABASE_USER }}
-          DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
 
         run: |
           set -euo pipefail  
@@ -34,15 +30,18 @@ jobs:
             git pull origin staging && \
             
             if [ ! -f .env ]; then
-              echo \"DATABASE_HOST=${DATABASE_HOST}\" > .env
-              echo \"DATABASE_NAME=${DATABASE_NAME}\" >> .env
-              echo \"DATABASE_USER=${DATABASE_USER}\" >> .env
-              echo \"DATABASE_PASSWORD=${DATABASE_PASSWORD}\" >> .env
-              echo \"Created .env file\"
+              echo "You need to create .env file"
             else
               echo \".env exists\"
             fi
-
+            
+            if [ -d "venv" ]; then
+              python3 -m venv venv
+              echo "Venv is created"
+            else
+              echo "venv exists"
+            fi
+            
             source venv/bin/activate && \
             pip install -r requirements.txt && \
             python manage.py collectstatic --noinput && \
