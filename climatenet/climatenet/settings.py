@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -49,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'climatenet.urls'
@@ -78,6 +80,20 @@ STATIC_ROOT = os.path.join(BASE_DIR,  'static')
 STATICFILES_DIRS = [
     BASE_DIR.parent.parent / "frontend/build/static"
 ]
+
+LOCALE_PATHS = [
+   os.path.join(BASE_DIR, 'locale')
+]
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('ru', _('Russian')),
+    ('hy', _('Armenian')),
+]
+
+LANGUAGE_CODE = 'en'
+
+USE_I18N = True
 
 CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:8000",
