@@ -42,15 +42,15 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'climatenet.urls'
@@ -81,19 +81,20 @@ STATICFILES_DIRS = [
     BASE_DIR.parent.parent / "frontend/build/static"
 ]
 
-LOCALE_PATHS = [
-   os.path.join(BASE_DIR, 'locale')
-]
+LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
     ('en', _('English')),
-    ('ru', _('Russian')),
     ('hy', _('Armenian')),
 ]
 
-LANGUAGE_CODE = 'en'
-
 USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+LOCALE_PATHS = [
+   os.path.join(BASE_DIR, 'locale')
+]
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
@@ -103,6 +104,7 @@ CORS_ORIGIN_WHITELIST = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
     "https://dev.climatenet.am",
     "http://dev.climatenet.am",
 ]
