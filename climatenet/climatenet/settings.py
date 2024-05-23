@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from django.utils.translation import gettext_lazy as _
 
 load_dotenv()
 
@@ -9,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", '127.0.0.1']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost']
 
 APPEND_SLASH = True
 
@@ -41,14 +42,15 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.security.SecurityMiddleware',
 ]
 
 ROOT_URLCONF = 'climatenet.urls'
@@ -79,18 +81,33 @@ STATICFILES_DIRS = [
     BASE_DIR.parent.parent / "frontend/build/static"
 ]
 
+LANGUAGE_CODE = 'en'
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('hy', _('Armenian')),
+]
+
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+LOCALE_PATHS = [
+   os.path.join(BASE_DIR, 'locale')
+]
+
 CORS_ORIGIN_WHITELIST = [
-    "http://127.0.0.1:8000",
+    "http://localhost:8000",
     "http://climatenet.am",
     "https://dev.climatenet.am",
-    "http://dev.climatenet.am"
+    "http://dev.climatenet.am",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "https://dev.climatenet.am",
     "http://dev.climatenet.am",
-    "https://dev.climatenet.am"
 ]
-
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_HEADERS = [
