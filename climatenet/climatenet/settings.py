@@ -107,6 +107,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://dev.climatenet.am",
     "http://dev.climatenet.am",
+    "http://climatenet.am",
+    "https://climatenet.am"
 ]
 CORS_ALLOW_CREDENTIALS = True
 
