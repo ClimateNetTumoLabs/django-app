@@ -1,27 +1,10 @@
-from django.views.generic import RedirectView
-from django.urls import path, re_path, include
-from rest_framework.routers import DefaultRouter
-from .views import  DeviceDetailView, FooterViewSet, AboutPageViewSet, DeviceDetailViewSet, ContactUsViewSet, download_data_excel
-
-router = DefaultRouter()
-router.register(r'about', AboutPageViewSet)
-router.register(r'devices', DeviceDetailViewSet)
-router.register(r'footer', FooterViewSet)
-router.register(r'contact', ContactUsViewSet)
+from django.urls import path
+from .views import (DeviceInnerViewSet, NearDeviceView, PeriodDataView, LatestDataView, HourlyDataView)
 
 urlpatterns = [
-    path('', include(router.urls)),
-    re_path(r'^download_data_excel/(?P<device_id>[\w-]+/?$)', download_data_excel, name='download_data_excel'),
-    re_path(r'^devices/(?P<generated_id>[\w-]+)$', 
-        RedirectView.as_view(url='/devices/%(generated_id)s/', permanent=True)),
-    path('devices', DeviceDetailViewSet.as_view({'get': 'list'}), 
-        name='device-detail-list-no-slash'),
-    re_path(r'^devices/(?P<parent_name>[\w-]+)/?$', 
-        DeviceDetailViewSet.as_view({'get': 'list'}), name='device-detail-list'),
-    re_path(r'^devices/(?P<generated_id>[\w-]+)/?$', 
-        DeviceDetailViewSet.as_view({'get': 'retrieve'}), 
-        name='device-detail-generated-id'),
-    re_path(r'^device/(?P<device_id>[\w-]+/?$)', DeviceDetailView.as_view(), 
-        name='device-detail'),
-]
-
+    path('list/', DeviceInnerViewSet.as_view({'get': 'list'})),
+    path('<str:device_id>/latest/', LatestDataView.as_view(), name='latest-device-data'),
+    path('<str:device_id>/period/', PeriodDataView.as_view(), name='period-device-data'),
+    path('<str:device_id>/nearby/', NearDeviceView.as_view(), name='nearby-device-data'),
+    path('<str:device_id>/24hours/', HourlyDataView.as_view(), name='hourly-device-data')
+    ]
