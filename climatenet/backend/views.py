@@ -26,8 +26,8 @@ from django.db import connections
 from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Device
-from .serializers import DeviceDetailSerializer
+from .models import Device, Participant
+from .serializers import DeviceDetailSerializer, ParticipantSerializer
 from .sql_queries import *
 
 
@@ -222,3 +222,8 @@ class DeviceInnerViewSet(viewsets.ModelViewSet):
     """
     queryset = Device.objects.all()
     serializer_class = DeviceDetailSerializer
+
+
+class ParticipantViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Participant.objects.all()
+    serializer_class = ParticipantSerializer

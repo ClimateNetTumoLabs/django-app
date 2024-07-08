@@ -11,3 +11,15 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.generated_id}"
+
+
+class Participant(models.Model):
+    generated_id = models.CharField(max_length=200, unique=True)
+    name = models.CharField(max_length=200)
+    job = models.CharField(max_length=200)
+    github_link = models.CharField(max_length=200, null=True, blank=True)
+    linkedin_link = models.CharField(max_length=200, null=True, blank=True)
+    image = models.ImageField(upload_to="participants", null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.id}"

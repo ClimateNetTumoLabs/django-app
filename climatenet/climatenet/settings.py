@@ -7,7 +7,7 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = False
+DEBUG = True
 
 SECRET_KEY = os.getenv('SECRET_KEY')
 ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost', '127.0.0.1']
@@ -76,9 +76,12 @@ WSGI_APPLICATION = 'climatenet.wsgi.application'
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR,  'static')
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATICFILES_DIRS = [
-    BASE_DIR.parent.parent / "frontend/build/static"
+    BASE_DIR.parent.parent / "frontend/build/static",
+
 ]
 
 LANGUAGE_CODE = 'en'
