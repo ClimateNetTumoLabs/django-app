@@ -14,7 +14,7 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path('', TemplateView.as_view(template_name='index.html'), name='main-page'),
     path('about/', TemplateView.as_view(template_name='index.html'), name='about-page'),
-    path('guide/', TemplateView.as_view(template_name='index.html'), name='guide-page'),
+    path('diy/', TemplateView.as_view(template_name='index.html'), name='diy-page'),
     path('device/<str:device_id>/', TemplateView.as_view(template_name='index.html'), name='device-detail-page'),
 )
 
