@@ -7,10 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DEBUG = False
+
+DEBUG = True
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost', '127.0.0.1', '10.19.221.203']
 
 APPEND_SLASH = True
 
@@ -30,6 +31,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
+    "modeltranslation",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -98,6 +100,8 @@ USE_TZ = True
 LOCALE_PATHS = [
    os.path.join(BASE_DIR, 'locale')
 ]
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",

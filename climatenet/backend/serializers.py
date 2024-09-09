@@ -7,12 +7,13 @@ class ParticipantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participant
-        fields = ['id', 'name', 'job', 'github_link', 'linkedin_link', 'image_url']
+        fields = '__all__'
 
     def get_image_url(self, obj):
         if obj.image:
             return f"{settings.MEDIA_URL}{obj.image}"
         return None
+
 
 class DeviceDetailSerializer(serializers.ModelSerializer):
     class Meta:
