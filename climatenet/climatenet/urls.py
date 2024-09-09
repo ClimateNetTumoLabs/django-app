@@ -8,6 +8,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('device_inner/', include('backend.urls')),
+    path('api/', include('backend.urls')),
 ]
 
 # Prefix URL patterns with the language code

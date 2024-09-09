@@ -29,6 +29,10 @@ from rest_framework.response import Response
 from .models import Device
 from .serializers import DeviceDetailSerializer
 from .sql_queries import *
+from django.utils.translation import activate
+from django.http import FileResponse, Http404
+from django.conf import settings
+import os
 
 
 class BaseDataView(APIView):
@@ -222,3 +226,13 @@ class DeviceInnerViewSet(viewsets.ModelViewSet):
     """
     queryset = Device.objects.all()
     serializer_class = DeviceDetailSerializer
+
+
+def serve_file(request, filename):
+    file_path = os.path.join(settings.BASE_DIR, 'backend', 'files', filename)
+    if os.path.isfile(file_path):
+        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+    else:
+        raise Http404("File not found")
