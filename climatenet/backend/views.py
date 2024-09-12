@@ -230,9 +230,14 @@ class DeviceInnerViewSet(viewsets.ModelViewSet):
 
 def serve_file(request, filename):
     file_path = os.path.join(settings.BASE_DIR, 'backend', 'files', filename)
-    if os.path.isfile(file_path):
-        response = FileResponse(open(file_path, 'rb'), as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        return response
+    if os.path.exists(file_path):
+        try:
+            file = open(file_path, 'rb')
+            response = FileResponse(file, content_type='application/octet-stream')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            response['Content-Length'] = os.path.getsize(file_path)
+            return response
+        except IOError:
+            return Http404("File not found or inaccessible")
     else:
         raise Http404("File not found")
