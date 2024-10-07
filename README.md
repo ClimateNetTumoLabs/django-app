@@ -42,6 +42,19 @@ pip3 install -r requirements.txt
 
 7. Go to frontend folder(you need to clone from [Frontend](https://github.com/ClimateNetTumoLabs/frontend)) and run following commands
 
+If everything is okay run
+
+```bash
+sudo apt install npm
+```
+For installing dependencies run
+```bash
+npm install
+```
+For preparing your application for production run
+```bash
+npm run build  
+```
 Structure of the folders need to be like this 
 ```
 .
@@ -56,17 +69,6 @@ Structure of the folders need to be like this
     ├── package.json
     ├── public
     └── src
-```
-If everything is okay run 
-   
-```bash
-sudo apt install npm
-```
-```bash
-npm install
-```
-```bash
-npm run build  
 ```
 Go back to `django-app/climatenet` and run 
 ```bash
@@ -92,4 +94,5 @@ else run
 python3 manage.py runserver
 ```
 After all steps open browser go to http://127.0.0.1:8000/ to see django app running.
+
 
