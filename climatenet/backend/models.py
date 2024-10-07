@@ -12,6 +12,7 @@ class Device(models.Model):
     def __str__(self):
         return f"{self.generated_id}"
 
+
 class TeamMember(models.Model):
     generated_id = models.CharField(max_length=200, unique=True)
     name = models.CharField(max_length=200)
@@ -21,4 +22,4 @@ class TeamMember(models.Model):
     image = models.ImageField(upload_to="team", null=True, blank=True)
 
     def __str__(self):
-        return f"{self.id}"
+        return f"{self.generated_id}"
