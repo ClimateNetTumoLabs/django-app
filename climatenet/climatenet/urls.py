@@ -8,17 +8,16 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('device_inner/', include('backend.urls')),
-    path('api/', include('backend.urls')),
+    path('api/', include('backend.urls'))
 ]
 
 # Prefix URL patterns with the language code
 urlpatterns += i18n_patterns(
     path('', TemplateView.as_view(template_name='index.html'), name='main-page'),
     path('about/', TemplateView.as_view(template_name='index.html'), name='about-page'),
-    path('guide/', TemplateView.as_view(template_name='index.html'), name='guide-page'),
     path('diy/', TemplateView.as_view(template_name='index.html'), name='diy-page'),
     path('device/<str:device_id>/', TemplateView.as_view(template_name='index.html'), name='device-detail-page'),
-)
+) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

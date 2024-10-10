@@ -1,5 +1,5 @@
-from .models import Device, Participant
 from django.contrib import admin
+from .models import Device, TeamMember
 from modeltranslation.admin import TranslationAdmin
 
 # Customize the admin site title and header
@@ -7,9 +7,13 @@ admin.site.site_title = "ClimateNet Admin"
 admin.site.site_header = "ClimateNet Admin"
 
 
-class ParticipantAdmin(TranslationAdmin):
+class TeamMemberAdmin(TranslationAdmin):
     pass
 
 
-admin.site.register(Device)
-admin.site.register(Participant, ParticipantAdmin)
+class DeviceAdmin(TranslationAdmin):
+    pass
+
+
+admin.site.register(Device, DeviceAdmin)
+admin.site.register(TeamMember, TeamMemberAdmin)

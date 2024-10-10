@@ -1,9 +1,15 @@
+# translation.py
+
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Participant
+from .models import TeamMember, Device
+
+class TeamMemberTranslationOptions(TranslationOptions):
+    fields = ('name', 'position')
+
+translator.register(TeamMember, TeamMemberTranslationOptions)
 
 
-class ParticipantTranslationOptions(TranslationOptions):
-    fields = ('name', 'job')  # Fields to be translated
+class DeviceTranslationOptions(TranslationOptions):
+    fields = ('name', 'parent_name')
 
-
-translator.register(Participant, ParticipantTranslationOptions)
+translator.register(Device, DeviceTranslationOptions)

@@ -7,11 +7,10 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-DEBUG = True
+DEBUG = False
 
 SECRET_KEY = os.getenv('SECRET_KEY')
-ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost', '127.0.0.1', '10.19.221.203']
+ALLOWED_HOSTS = ['climatenet.am', 'dev.climatenet.am', "https://dev.climatenet.am", 'localhost', '127.0.0.1']
 
 APPEND_SLASH = True
 
@@ -31,7 +30,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
-    "modeltranslation",
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -78,12 +77,12 @@ WSGI_APPLICATION = 'climatenet.wsgi.application'
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR,  'static')
+
 MEDIA_URL = 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATICFILES_DIRS = [
-    BASE_DIR.parent.parent / "frontend/build/static",
-
+    BASE_DIR.parent.parent / "frontend/build/static"
 ]
 
 LANGUAGE_CODE = 'en'
@@ -97,11 +96,11 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
+
 LOCALE_PATHS = [
    os.path.join(BASE_DIR, 'locale')
 ]
-
-MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
 CORS_ORIGIN_WHITELIST = [
     "http://localhost:8000",
