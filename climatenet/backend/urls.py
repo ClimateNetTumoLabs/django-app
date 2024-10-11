@@ -1,9 +1,10 @@
 from django.urls import path, include
-from django.conf.urls.i18n import i18n_patterns
-from .views import (DeviceInnerViewSet, NearDeviceView, PeriodDataView, LatestDataView, HourlyDataView)
+from .views import (DeviceInnerViewSet, NearDeviceView, PeriodDataView, LatestDataView, HourlyDataView,
+                    TeamMemberViewSet)
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
+router.register(r'teamMember', TeamMemberViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -30,6 +30,7 @@ DATABASES = {
 }
 
 INSTALLED_APPS = [
+    'modeltranslation',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,6 +78,9 @@ WSGI_APPLICATION = 'climatenet.wsgi.application'
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR,  'static')
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 STATICFILES_DIRS = [
     BASE_DIR.parent.parent / "frontend/build/static"
 ]
@@ -91,6 +95,8 @@ LANGUAGES = [
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 
 LOCALE_PATHS = [
    os.path.join(BASE_DIR, 'locale')
