@@ -27,7 +27,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Device, TeamMember
-from .serializers import DeviceDetailSerializer, TeamMemberSerializer
+from .serializers import DeviceDetailSerializer, TeamMemberSerializer,SubmitFormSerializer
 from .sql_queries import *
 from django.utils.translation import activate
 from django.http import FileResponse, Http404
@@ -234,3 +234,12 @@ class TeamMemberViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = TeamMember.objects.all()
     serializer_class = TeamMemberSerializer
+
+class SubmitFormView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = SubmitFormSerializer(data=request.data)
+        if serializer.is_valid():
+            # Save the form data without requiring a user
+            user_form = serializer.save(user=None)  # or simply save the serializer
+            return Response({"message": "Form submitted successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
