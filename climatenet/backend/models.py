@@ -38,6 +38,8 @@ class UserForm(models.Model):
                                     help_text="Latitude, Longitude (e.g., 40.7128, -74.0060)", 
                                     default="0.0, 0.0")
     submitted_at = models.DateTimeField(auto_now_add=True)
+    # device_id = models.CharField(max_length=255, null=True, blank=True, default="0")
+    test = models.CharField(max_length=255, null=True, blank=True, default="0")
 
     def __str__(self):
         return f"{self.name} - {self.status}"

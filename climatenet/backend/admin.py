@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Device, TeamMember,UserForm
 from modeltranslation.admin import TranslationAdmin
-from .mailSender import send_approval_email
+from .mailSender import send_approval_email,send_mail
 
 # Customize the admin site title and header
 admin.site.site_title = "ClimateNet Admin"
@@ -23,14 +23,21 @@ class UserFormAdmin(admin.ModelAdmin):
         queryset.update(status='approved')
         # Send approval email logic
         for form in queryset:
-            send_approval_email(form.user)
+            # send_approval_email(form.user)
+            print(form.email)
+            send_mail(recipient=form.email,subject="hello",attachment="approval.html",html_file_path="approval.html")
+            
         self.message_user(request, "Selected forms have been approved")
 
     def reject_forms(self, request, queryset):
         queryset.update(status='rejected')
+        for form in queryset:
+            send_mail(recipient=form.email,subject="rejected",attachment=None,html_file_path="decline.html")
         self.message_user(request, "Selected forms have been rejected")
     def delete_user(self, request, queryset):
         # queryset.update(status='rejected')
+        for form in queryset:
+            send_mail(recipient=form.email,subject="termination",attachment=None,html_file_path="termination.html")
         self.message_user(request, "Selected forms have been deleted")
 
 admin.site.register(Device, DeviceAdmin)

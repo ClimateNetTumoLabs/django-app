@@ -1,0 +1,116 @@
+<!-- 
+Subject: ClimateNet Device Termination Notice
+Dear [User's Name],
+Due to repeated violations of our usage policies, we are deleting your ClimateNet DIY Kit from our network effective immediately.
+For questions or to appeal, please contact us at labs@tumo.org 
+Thank you for your understanding.
+Best regards,
+The TUMO Labs Team 
+-->
+
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUMO Labs Letter</title>
+    <style>
+        /* Light theme (default) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-image: url(https://images-in-website.s3.us-east-1.amazonaws.com/MailTemplate/banner.jpg);
+            height: 100px;
+            background-size: cover;
+            background-repeat: no-repeat;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .content {
+            padding-top: 20px;
+            border-top: 1px solid #ccc;
+        }
+
+        .greeting {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .signature {
+            font-weight: bold;
+            text-align: right;
+            margin-top: 30px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                height: 80px;
+            
+            }
+
+            .message {
+                font-size: 0.95em;
+            }
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #232222;
+                color: #ffffff;
+            }
+
+            .container {
+                background-color: #2e2e2e;
+                box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+            }
+
+            .content {
+                border-top: 1px solid #555;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"></div>
+        <div class="content">
+            <p class="greeting">{{recipient_email}}</p>
+            <p class="message">Due to repeated violations of our usage policies, we are deleting your ClimateNet DIY Kit from our network effective immediately.</p>
+            <p class="message">For questions or to appeal, please contact us at labs@tumo.org </p>
+            <p class="signature">Thank you for your understanding.</p>
+            <p class="signature">Best regards, <br>TUMO Labs Team</p>
+        </div>
+    </div>
+</body>
+</html>
