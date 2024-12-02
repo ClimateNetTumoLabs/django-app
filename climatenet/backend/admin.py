@@ -25,7 +25,7 @@ class UserFormAdmin(admin.ModelAdmin):
         for form in queryset:
             # send_approval_email(form.user)
             print(form.email)
-            send_mail(recipient=form.email,subject="hello",attachment="approval.html",html_file_path="approval.html")
+            send_mail(recipient=form.email,subject="hello",attachment="approval.html",html_file_path="approval.html",name=form.name)
             
         self.message_user(request, "Selected forms have been approved")
 

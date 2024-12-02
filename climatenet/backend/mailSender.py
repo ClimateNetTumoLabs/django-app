@@ -55,7 +55,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
-def send_mail(recipient,subject,attachment,html_file_path):
+def send_mail(recipient,subject,attachment,html_file_path,name=""):
     SENDER = "baboomian53@gmail.com"
     print("===========")
     print(recipient)
@@ -69,6 +69,8 @@ def send_mail(recipient,subject,attachment,html_file_path):
     try:
         with open(html_file_path, "r", encoding="utf-8") as html_file:
             BODY_HTML = html_file.read()
+            BODY_HTML = BODY_HTML.replace("{{recipient_email}}", name)
+            
     except FileNotFoundError:
         print(f"Error: HTML file not found at {html_file_path}")
         return
