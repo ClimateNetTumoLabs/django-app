@@ -4,12 +4,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
+from backend.views import SubmitFormView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('device_inner/', include('backend.urls')),
     path('api/', include('backend.urls')),
     path('', include('privacy_and_policy.urls')),  # Include your app's URLs
+    path('submit-form/', SubmitFormView.as_view(), name='submit-form'),
+
 ]
 
 # Prefix URL patterns with the language code
