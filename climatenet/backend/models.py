@@ -24,22 +24,3 @@ class TeamMember(models.Model):
     def __str__(self):
         return f"{self.generated_id}"
 
-class UserForm(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True) 
-    status = models.CharField(max_length=20, choices=[
-        ('pending', 'Pending'), 
-        ('approved', 'Approved'), 
-        ('rejected', 'Rejected')
-    ], default='pending')
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    message = models.TextField()
-    coordinates = models.CharField(max_length=50, 
-                                    help_text="Latitude, Longitude (e.g., 40.7128, -74.0060)", 
-                                    default="0.0, 0.0")
-    submitted_at = models.DateTimeField(auto_now_add=True)
-    # device_id = models.CharField(max_length=255, null=True, blank=True, default="0")
-    test = models.CharField(max_length=255, null=True, blank=True, default="0")
-
-    def __str__(self):
-        return f"{self.name} - {self.status}"

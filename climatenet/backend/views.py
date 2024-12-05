@@ -27,7 +27,7 @@ from rest_framework import viewsets, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Device, TeamMember
-from .serializers import DeviceDetailSerializer, TeamMemberSerializer,SubmitFormSerializer
+from .serializers import DeviceDetailSerializer, TeamMemberSerializer
 from .sql_queries import *
 from django.utils.translation import activate
 from django.http import FileResponse, Http404

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'privacy_and_policy',
+    'UserRequestManager',
 ]
 
 MIDDLEWARE = [
