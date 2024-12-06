@@ -10,9 +10,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('device_inner/', include('backend.urls')),
     path('api/', include('backend.urls')),
-    path('', include('privacy_and_policy.urls')),  # Include your app's URLs
+    path('', include('privacy_and_policy.urls')),
     path('submit-form/', SubmitFormView.as_view(), name='submit-form'),
-
+    path('cookies/', include('cookies_app.urls')),
 ]
 
 # Prefix URL patterns with the language code

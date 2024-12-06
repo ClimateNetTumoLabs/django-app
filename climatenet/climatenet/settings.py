@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'privacy_and_policy',
+    'cookies_app',
+
 ]
 
 MIDDLEWARE = [
