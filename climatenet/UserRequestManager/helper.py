@@ -65,7 +65,7 @@ def send_mail(recipient,subject,attachment,html_file_path,name=""):
     CHARSET = "utf-8"
 
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    html_file_path = os.path.join(BASE_DIR, "backend/html", html_file_path)
+    html_file_path = os.path.join(BASE_DIR, "UserRequestManager/html", html_file_path)
     try:
         with open(html_file_path, "r", encoding="utf-8") as html_file:
             BODY_HTML = html_file.read()
@@ -95,7 +95,7 @@ def send_mail(recipient,subject,attachment,html_file_path,name=""):
 
     print(html_file_path)
     if (attachment is not None):
-        attachment = os.path.join(BASE_DIR, "backend/html", attachment)
+        attachment = os.path.join(BASE_DIR, "UserRequestManager/html", attachment)
         print(attachment)
         with open(attachment, 'rb') as attachment_file:
             att = MIMEApplication(attachment_file.read())
