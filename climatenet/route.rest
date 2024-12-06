@@ -1,6 +1,6 @@
-POST  http://127.0.0.1:8000/submit-form/ 
+POST  http://127.0.0.1:8000/api/users/submit-form/ 
 Content-Type: application/json
 
 {
-"name": "arno", "email": "johndoe@example.com", "message": "Hello, this is a test message.", "coordinates": "40.7128, -74.0060"
+"name": "sona", "email": "sona.arzumanyan@tumo.org", "message": "Hello, this is a test message.", "coordinates": "40.7128, -74.0060"
 }

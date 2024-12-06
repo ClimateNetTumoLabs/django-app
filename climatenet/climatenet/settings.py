@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'privacy_and_policy',
     'cookies_app',
-
+    'UserRequestManager',
 ]
 
 MIDDLEWARE = [
