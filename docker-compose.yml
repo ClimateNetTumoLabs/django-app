@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  
+  postgres:
+    container_name: postgres
+    image: postgres:latest
+    restart: on-failure
+    env_file:
+      - .dbenv
+    ports:
+      - "5432:5432"
+    volumes:
+      - /var/db_data:/var/lib/postgresql/data 
+  # web:
+  #   container_name: django-app
+  #   build: .
+  #   command: python manage.py runserver
+  #   volumes:
+  #     - .:/app
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     - postgres
+
+
+# POSTGRES_USER=admin2
+# POSTGRES_PASSWORD='admin2'
+# POSTGRES_DB=development
+# POSTGRES_HOST=postgres
+# POSTGRES_PORT=5432
