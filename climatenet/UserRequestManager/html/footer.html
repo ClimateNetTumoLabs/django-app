@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Footer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    footer {
+      background: #333232;
+      padding: 15px 0;
+      color: #eae6e2;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .footer-inner div {
+      margin: 15px;
+      flex: 1 1 30%;
+      text-align: center;
+    }
+
+    h3 {
+      color: #eae6e2;
+      margin-bottom: 15px;
+    }
+
+    p, a {
+      color: #eae6e2;
+      text-decoration: none;
+      transition: color 0.4s;
+    }
+
+    a:hover {
+      color: #e07789;
+    }
+
+    .social-icons ul {
+      display: flex;
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .social-icons ul li {
+      margin: 0 15px;
+    }
+
+    .social-icons a {
+      display: block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      background: #fff;
+      color: #333232;
+      border-radius: 50%;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #fff;
+      transition: color 0.5s, transform 0.5s;
+    }
+
+    .social-icons a:hover {
+      color: #fff;
+      transform: rotate(360deg);
+    }
+
+    .social-icons a::before {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #e07789;
+      transition: top 0.5s;
+      z-index: -1;
+    }
+
+    .social-icons a:hover::before {
+      top: 0;
+    }
+
+    .contact-info img {
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      padding: 10px 0;
+      background: #222;
+      color: #eae6e2;
+    }
+
+    @media (max-width: 767px) {
+      .footer-inner {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <h3>Footer Title</h3>
+        <div class="social-icons">
+          <ul>
+            <li><a href="https://www.facebook.com/tumolabs/"><i class="fab fa-facebook-f"></i></a></li>
+            <li><a href="https://www.instagram.com/tumolabs/"><i class="fab fa-instagram"></i></a></li>
+            <li><a href="https://www.youtube.com/channel/UC1spAfywefFdHxrKWLZaDuA"><i class="fab fa-youtube"></i></a></li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <p class="contact-info">
+          <a href="https://www.google.com/maps/place/2a+Halabyan+St,+Yerevan+0038/">
+            <img src="location.svg" alt="Location Icon" width="20">
+            2a Halabyan St, Yerevan
+          </a>
+        </p>
+        <p class="contact-info">
+          <a href="tel:+37410398413">
+            <img src="phone.svg" alt="Phone Icon" width="20">
+            +374 10 398413
+          </a>
+        </p>
+        <p class="contact-info">
+          <a href="mailto:labs@tumo.org">
+            <img src="mail.svg" alt="Mail Icon" width="20">
+            labs@tumo.org
+          </a>
+        </p>
+      </div>
+      <div>
+        <p><a href="https://tumolabs.am/en/upcoming-projects/">Upcoming Projects</a></p>
+        <p><a href="https://tumolabs.am/en/past-projects/">Past Projects</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>
