@@ -7,7 +7,8 @@ class UserForm(models.Model):
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'), 
         ('approved', 'Approved'), 
-        ('rejected', 'Rejected')
+        ('rejected', 'Rejected'),
+        ('terminated', 'Terminated'),
     ], default='pending')
     name = models.CharField(max_length=100)
     email = models.EmailField()

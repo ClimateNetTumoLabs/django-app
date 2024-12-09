@@ -8,7 +8,7 @@ import json
 from django.conf import settings
 
 class UserFormAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'coordinates', 'status', 'submitted_at')
+    list_display = ('name', 'email', 'coordinates', 'status', 'submitted_at','device_id')
     actions = ['approve_forms', 'reject_forms', 'delete_user']
 
 
@@ -57,6 +57,7 @@ class UserFormAdmin(admin.ModelAdmin):
 
             # Update form status to 'approved'
             form.status = 'approved'
+            form.device_id = certificate_id
             form.save()
 
             # Send approval email
@@ -192,7 +193,14 @@ class ApprovedUserAdmin(admin.ModelAdmin):
         """
         for user in queryset:
             self.delete_aws_thing_and_certificate(user.device_id, request)
-
+            try:
+                user_form = UserForm.objects.get(email=user.email , device_id=user.device_id)
+                user_form.status = 'terminated'
+                user_form.device_id = None
+                user_form.save()
+            except UserForm.DoesNotExist:
+                self.message_user("User not found",level="error")
+                pass
             # Notify user about deletion
             send_mail(
                 recipient=user.email,
