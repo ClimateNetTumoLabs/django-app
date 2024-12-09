@@ -10,7 +10,7 @@ urlpatterns = [
     path('device_inner/', include('backend.urls')),
     path('api/', include('backend.urls')),
     path('', include('privacy_and_policy.urls')),
-    path('cookies/', include('cookies_app.urls')),
+    path('api/', include('cookies_app.urls')),
     path('api/users/', include('UserRequestManager.urls')),
 ]
 
